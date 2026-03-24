@@ -1,0 +1,3 @@
+# Gemini가 접근하면 안 되는 Claude 설정 파일
+.claude/settings.local.json
+.claude/settings.json

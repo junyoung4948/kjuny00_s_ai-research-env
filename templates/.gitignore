@@ -1,0 +1,15 @@
+# Claude Code 로컬 설정 (서버별 다름)
+.claude/settings.local.json
+
+# 대용량 원본 데이터
+.research/logs/**/*.raw
+.research/logs/**/*.csv
+profiling/results/**/*.raw
+profiling/results/**/*.csv
+simulation/results/**/*.raw
+simulation/results/**/*.csv
+
+# 일반적인 연구 산출물 (대용량)
+*.pyc
+__pycache__/
+.pytest_cache/
