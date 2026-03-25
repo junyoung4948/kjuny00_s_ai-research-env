@@ -1,31 +1,31 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Guard/Freeze hook: profiling/results/ 와 simulation/results/ 수정 차단
-# gstack freeze 패턴 차용 — 고정 경로 보호
+# Guard/Freeze hook: Block modifications to profiling/results/ and simulation/results/
+# Inspired by gstack freeze pattern — protect fixed paths
 
 INPUT=$(cat)
 
-# file_path 추출 (Edit/Write 도구의 tool_input에서)
+# Extract file_path from tool_input (Edit/Write tools)
 FILE_PATH=$(printf '%s' "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:[[:space:]]*"//;s/"$//' || true)
 
-# Python fallback (이스케이프된 따옴표 처리)
+# Python fallback (handles escaped quotes)
 if [ -z "$FILE_PATH" ]; then
   FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import sys,json; print(json.loads(sys.stdin.read()).get("tool_input",{}).get("file_path",""))' 2>/dev/null || true)
 fi
 
-# file_path가 없으면 허용
+# No file_path found — allow
 if [ -z "$FILE_PATH" ]; then
   echo '{}'
   exit 0
 fi
 
-# 절대 경로로 변환
+# Convert to absolute path
 if [[ "$FILE_PATH" != /* ]]; then
   FILE_PATH="$(pwd)/$FILE_PATH"
 fi
 
-# 보호 디렉토리 목록
+# Protected directory list
 FROZEN_DIRS=(
   "profiling/results"
   "simulation/results"
@@ -41,5 +41,5 @@ for FROZEN in "${FROZEN_DIRS[@]}"; do
   fi
 done
 
-# 보호 대상이 아니면 허용
+# Not a protected path — allow
 echo '{}'

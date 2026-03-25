@@ -1,17 +1,17 @@
-# 핵심 설계/방법론 결정 기록
+# Key Design/Methodology Decision Record
 
-연구의 주요 결정사항을 기록합니다.
-**기존 항목은 삭제하지 마세요.** 추가만 가능합니다.
+Record major research decisions here.
+**Never delete existing entries.** Append only.
 
-형식:
+Format:
 ```
-## [YYYY-MM-DD] 결정 제목
-- **결정**: ...
-- **이유**: ...
-- **대안**: ...
-- **확인**: 연구자 확인 완료
+## [YYYY-MM-DD] Decision Title
+- **Decision**: ...
+- **Rationale**: ...
+- **Alternatives considered**: ...
+- **Confirmation**: Researcher confirmed
 ```
 
 ---
 
-(아직 기록된 결정이 없습니다.)
+(No decisions recorded yet.)

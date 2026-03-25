@@ -1,19 +1,19 @@
-# 연구 컨텍스트
+# Research Context
 
-## 현재 연구 주제
-(프로젝트 초기화 후 작성)
+## Current Research Topic
+(Write after project initialization)
 
-## 진행 상황
-- **현재 단계**: 초기 설정
-- **최근 작업**: 프로젝트 환경 구성
-- **다음 단계**: 연구 주제 선정 및 가설 수립
+## Progress
+- **Current phase**: Initial setup
+- **Recent work**: Project environment configuration
+- **Next step**: Select research topic and form hypotheses
 
-## 핵심 결정 사항
-(decisions.md 참조)
+## Key Decisions
+(See decisions.md)
 
-## 활성 실험
-(없음)
+## Active Experiments
+(None)
 
 ---
-*이 파일은 세션 시작 시 양쪽 모델이 반드시 읽습니다.*
-*연구가 진행되면서 지속적으로 갱신하세요.*
+*Both models must read this file at the start of every session.*
+*Update continuously as research progresses.*

@@ -1,10 +1,21 @@
-# 누적 인사이트 (Wisdom)
+# Accumulated Insights (Wisdom)
 
-연구를 진행하면서 배운 교훈을 기록합니다.
-**기존 항목은 삭제하지 마세요.** 추가만 가능합니다.
-
-형식: `- [YYYY-MM-DD] 인사이트 내용`
+**Rule**: Never delete existing entries. Append only.
+**Format**: `- [YYYY-MM-DD] insight content`
 
 ---
 
-(아직 기록된 인사이트가 없습니다. 연구가 진행되면 자동으로 추가됩니다.)
+## Learnings
+Lessons from experiments, results that differed from expectations, effective approaches.
+
+(No entries yet. Insights will be added as research progresses.)
+
+## Pitfalls
+Failure causes, mistakes not to repeat, time-wasting paths.
+
+(No entries yet.)
+
+## Tool Tips
+Practical tips about simulators, analysis tools, and environment.
+
+(No entries yet.)

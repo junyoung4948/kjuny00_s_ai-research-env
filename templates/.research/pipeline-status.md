@@ -1,16 +1,16 @@
-# 실험 파이프라인 상태
+# Experiment Pipeline Status
 
-## 활성 실험
+## Active Experiments
 
-| 실험명 | 상태 | 시작일 | 담당 | 비고 |
-|--------|------|--------|------|------|
-| (없음) | — | — | — | — |
+| Experiment | Status | Start Date | Owner | Notes |
+|-----------|--------|-----------|-------|-------|
+| (none) | — | — | — | — |
 
-## 완료된 실험
+## Completed Experiments
 
-| 실험명 | 완료일 | 결과 | 검증 |
-|--------|--------|------|------|
-| (없음) | — | — | — |
+| Experiment | Completion Date | Result | Validated |
+|-----------|----------------|--------|-----------|
+| (none) | — | — | — |
 
 ---
-*실험이 시작/완료될 때마다 이 파일을 갱신하세요.*
+*Update this file whenever experiments start or complete.*

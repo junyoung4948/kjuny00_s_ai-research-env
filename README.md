@@ -8,11 +8,12 @@
 
 ## 왜 만들었나?
 
-Claude Code와 Antigravity(Gemini)를 연구에 같이 쓰고 싶은데, 두 모델이 같은 프로젝트에서 협업할 수 있는 표준화된 환경이 없었습니다.
+Claude Code와 Gemini를 하나의 연구 프로젝트에서 함께 사용하기 위한 설정 파일 모음입니다.
 
 이 템플릿은:
 - 두 모델의 **역할 분담**과 **통신 규약**을 정의합니다
 - **파라미터 결정, 실험 결과 보호, 디버깅 한도** 등의 안전장치를 설정 파일과 hook으로 강제합니다
+- AI 슬롭(scope inflation, hallucinated expertise 등)을 방지하는 **규율 시스템**을 포함합니다
 - 연구 맥락을 `.research/`에 보존하여 세션 간 연속성을 유지합니다
 
 ---
@@ -24,7 +25,7 @@ Claude Code와 Antigravity(Gemini)를 연구에 같이 쓰고 싶은데, 두 모
 1. **[oh-my-openagent](https://github.com/nicekate/oh-my-openagent)** — AGENTS.md를 활용한 크로스 툴 브릿지 패턴, Wisdom 누적 시스템, Category 기반 모델 흐름 가이드
 2. **[gstack](https://github.com/anthropics/gstack)** — Claude Code Skills(Hard Gate), PreToolUse hooks(freeze/careful), artifact 기반 비동기 통신, 3-Strike Rule
 
-두 프로젝트의 분석 결과를 교차 검증하고, Gemini와 Claude가 공동으로 구현 계획을 수립한 뒤 Claude Code가 최종 구현했습니다.
+oh-my-openagent와 gstack의 패턴을 참고하여 연구 환경에 맞게 설계했습니다.
 
 ---
 
@@ -145,7 +146,11 @@ your-research-project/
 │       ├── document/SKILL.md
 │       └── reflect/SKILL.md
 ├── .agents/
-│   ├── rules/research-roles.md    ← Antigravity 역할 규칙
+│   ├── skills/                  ← 7개 스킬 (Claude에서 미러링)
+│   ├── rules/
+│   │   ├── research-roles.md    ← Antigravity 역할 규칙
+│   │   ├── anti-slop.md         ← AI 슬롭 방지 (상시 적용)
+│   │   └── safety.md            ← 안전 규칙 (상시 적용)
 │   └── workflows/research-cycle.md ← 연구 사이클 워크플로우
 ├── .research/
 │   ├── context.md         ← 현재 연구 맥락

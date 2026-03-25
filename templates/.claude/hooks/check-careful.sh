@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Careful hook: 위험 명령 감지 시 사용자에게 확인 요청
-# gstack careful 패턴 차용
+# Careful hook: Detect dangerous commands and ask for user confirmation
+# Inspired by gstack careful pattern
 
 INPUT=$(cat)
 
-# command 추출 (Bash 도구의 tool_input에서)
+# Extract command from tool_input (Bash tool)
 COMMAND=$(printf '%s' "$INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:[[:space:]]*"//;s/"$//' || true)
 
 # Python fallback
@@ -14,13 +14,13 @@ if [ -z "$COMMAND" ]; then
   COMMAND=$(printf '%s' "$INPUT" | python3 -c 'import sys,json; print(json.loads(sys.stdin.read()).get("tool_input",{}).get("command",""))' 2>/dev/null || true)
 fi
 
-# command가 없으면 허용
+# No command found — allow
 if [ -z "$COMMAND" ]; then
   echo '{}'
   exit 0
 fi
 
-# 안전한 예외 패턴 (이것들은 경고하지 않음)
+# Safe exception patterns (no warning for these)
 SAFE_PATTERNS=(
   "rm -rf __pycache__"
   "rm -rf .pytest_cache"
@@ -38,7 +38,7 @@ for SAFE in "${SAFE_PATTERNS[@]}"; do
   fi
 done
 
-# 위험 패턴 감지
+# Dangerous pattern detection
 if [[ "$COMMAND" =~ rm[[:space:]]+-r[f]?[[:space:]] ]] || [[ "$COMMAND" =~ rm[[:space:]]+-fr[[:space:]] ]]; then
   printf '{"permissionDecision":"ask","message":"[careful] Destructive: recursive delete (rm -r). This permanently removes files. Are you sure?"}\n'
   exit 0
@@ -69,5 +69,5 @@ if [[ "$COMMAND" == *"git clean -f"* ]]; then
   exit 0
 fi
 
-# 위험 패턴 없으면 허용
+# No dangerous patterns — allow
 echo '{}'
