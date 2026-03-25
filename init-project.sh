@@ -1,27 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# init-project.sh — 연구 프로젝트에 AI 환경 템플릿 주입
-# 사용법: cd /path/to/project && bash /path/to/ai-research-env/init-project.sh
+# init-project.sh — Inject AI research environment template into a project
+# Usage: cd /path/to/project && bash /path/to/ai-research-env/init-project.sh
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATE_DIR="$SCRIPT_DIR/templates"
 PROJECT_DIR="$(pwd)"
 
-echo "=== AI Research Environment: 프로젝트 초기화 ==="
-echo "프로젝트 경로: $PROJECT_DIR"
-echo "템플릿 경로:   $TEMPLATE_DIR"
+echo "=== AI Research Environment: Project Initialization ==="
+echo "Project path: $PROJECT_DIR"
+echo "Template path: $TEMPLATE_DIR"
 echo ""
 
-# 안전 확인
+# Safety check
 if [ "$PROJECT_DIR" = "$SCRIPT_DIR" ]; then
-  echo "[error] ai-research-env 디렉토리 자체에서는 실행할 수 없습니다."
-  echo "        연구 프로젝트 디렉토리로 이동한 후 실행하세요."
+  echo "[error] Cannot run inside the ai-research-env directory itself."
+  echo "        Navigate to your research project directory first."
   exit 1
 fi
 
-# 1. 디렉토리 구조 생성
-echo "[1/7] 디렉토리 구조 생성..."
+# 1. Create directory structure
+echo "[1/8] Creating directory structure..."
 DIRS=(
   ".research/plans"
   ".research/feedback"
@@ -38,6 +38,13 @@ DIRS=(
   ".claude/hooks"
   ".agents/rules"
   ".agents/workflows"
+  ".agents/skills/brainstorm"
+  ".agents/skills/experiment-design"
+  ".agents/skills/validate"
+  ".agents/skills/analyze"
+  ".agents/skills/diagnose"
+  ".agents/skills/document"
+  ".agents/skills/reflect"
   "profiling/scripts"
   "profiling/results"
   "simulation/configs"
@@ -50,14 +57,14 @@ for DIR in "${DIRS[@]}"; do
   mkdir -p "$PROJECT_DIR/$DIR"
 done
 
-# 2. 핵심 설정 파일 복사 (충돌 방지: 기존 파일은 건너뜀)
-echo "[2/7] 핵심 설정 파일 복사..."
+# 2. Copy core config files (skip if already exists)
+echo "[2/8] Copying core config files..."
 
 copy_if_not_exists() {
   local src="$1"
   local dst="$2"
   if [ -f "$dst" ]; then
-    echo "  [skip] $(basename "$dst") — 이미 존재"
+    echo "  [skip] $(basename "$dst") — already exists"
   else
     cp "$src" "$dst"
     echo "  [done] $(basename "$dst")"
@@ -69,32 +76,40 @@ copy_if_not_exists "$TEMPLATE_DIR/CLAUDE.md" "$PROJECT_DIR/CLAUDE.md"
 copy_if_not_exists "$TEMPLATE_DIR/GEMINI.md" "$PROJECT_DIR/GEMINI.md"
 
 # 3. .gitignore, .aiexclude
-echo "[3/7] .gitignore, .aiexclude..."
+echo "[3/8] .gitignore, .aiexclude..."
 copy_if_not_exists "$TEMPLATE_DIR/.gitignore" "$PROJECT_DIR/.gitignore"
 copy_if_not_exists "$TEMPLATE_DIR/.aiexclude" "$PROJECT_DIR/.aiexclude"
 
-# 4. Claude 설정 + hooks
-echo "[4/7] Claude 설정 + hooks..."
+# 4. Claude config + hooks
+echo "[4/8] Claude config + hooks..."
 copy_if_not_exists "$TEMPLATE_DIR/.claude/settings.json" "$PROJECT_DIR/.claude/settings.json"
 cp "$TEMPLATE_DIR/.claude/hooks/check-freeze.sh" "$PROJECT_DIR/.claude/hooks/check-freeze.sh"
 cp "$TEMPLATE_DIR/.claude/hooks/check-careful.sh" "$PROJECT_DIR/.claude/hooks/check-careful.sh"
 chmod +x "$PROJECT_DIR/.claude/hooks/check-freeze.sh"
 chmod +x "$PROJECT_DIR/.claude/hooks/check-careful.sh"
-echo "  [done] hooks (항상 최신으로 덮어씀)"
+echo "  [done] hooks (always overwritten with latest)"
 
-# 5. Skills
-echo "[5/7] Skills (SKILL.md)..."
+# 5. Claude Skills
+echo "[5/8] Claude Skills (SKILL.md)..."
 for SKILL in brainstorm experiment-design validate analyze diagnose document reflect; do
   copy_if_not_exists "$TEMPLATE_DIR/.claude/skills/$SKILL/SKILL.md" "$PROJECT_DIR/.claude/skills/$SKILL/SKILL.md"
 done
 
-# 6. .agents/ rules + workflows
-echo "[6/7] .agents/ rules + workflows..."
+# 6. Antigravity Skills (mirror from Claude — single source)
+echo "[6/8] Antigravity Skills (mirrored from Claude)..."
+for SKILL in brainstorm experiment-design validate analyze diagnose document reflect; do
+  copy_if_not_exists "$TEMPLATE_DIR/.claude/skills/$SKILL/SKILL.md" "$PROJECT_DIR/.agents/skills/$SKILL/SKILL.md"
+done
+
+# 7. .agents/ rules + workflows
+echo "[7/8] .agents/ rules + workflows..."
 copy_if_not_exists "$TEMPLATE_DIR/.agents/rules/research-roles.md" "$PROJECT_DIR/.agents/rules/research-roles.md"
+copy_if_not_exists "$TEMPLATE_DIR/.agents/rules/anti-slop.md" "$PROJECT_DIR/.agents/rules/anti-slop.md"
+copy_if_not_exists "$TEMPLATE_DIR/.agents/rules/safety.md" "$PROJECT_DIR/.agents/rules/safety.md"
 copy_if_not_exists "$TEMPLATE_DIR/.agents/workflows/research-cycle.md" "$PROJECT_DIR/.agents/workflows/research-cycle.md"
 
-# 7. .research/ 초기 컨텐츠
-echo "[7/7] .research/ 초기 컨텐츠..."
+# 8. .research/ initial content
+echo "[8/8] .research/ initial content..."
 copy_if_not_exists "$TEMPLATE_DIR/.research/context.md" "$PROJECT_DIR/.research/context.md"
 copy_if_not_exists "$TEMPLATE_DIR/.research/wisdom.md" "$PROJECT_DIR/.research/wisdom.md"
 copy_if_not_exists "$TEMPLATE_DIR/.research/decisions.md" "$PROJECT_DIR/.research/decisions.md"
@@ -102,9 +117,9 @@ copy_if_not_exists "$TEMPLATE_DIR/.research/scope-mode.txt" "$PROJECT_DIR/.resea
 copy_if_not_exists "$TEMPLATE_DIR/.research/pipeline-status.md" "$PROJECT_DIR/.research/pipeline-status.md"
 
 echo ""
-echo "=== 초기화 완료 ==="
+echo "=== Initialization Complete ==="
 echo ""
-echo "프로젝트 구조:"
+echo "Project structure:"
 echo "  $PROJECT_DIR/"
 echo "  ├── AGENTS.md, CLAUDE.md, GEMINI.md"
 echo "  ├── .claude/  (settings, hooks, skills)"
@@ -114,7 +129,7 @@ echo "  ├── profiling/ (scripts, results[FROZEN])"
 echo "  ├── simulation/ (configs, scripts, results[FROZEN])"
 echo "  └── docs/sections/"
 echo ""
-echo "다음 단계:"
-echo "  1. .research/context.md에 연구 주제를 작성하세요"
-echo "  2. .research/scope-mode.txt를 확인하세요 (기본: EXPLORATION)"
-echo "  3. Claude Code 또는 Antigravity에서 /brainstorm으로 시작하세요"
+echo "Next steps:"
+echo "  1. Write your research topic in .research/context.md"
+echo "  2. Check .research/scope-mode.txt (default: EXPLORATION)"
+echo "  3. Start with /brainstorm in Claude Code or Antigravity"
