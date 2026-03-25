@@ -27,6 +27,8 @@ Claude Code와 Gemini를 하나의 연구 프로젝트에서 함께 사용하기
 
 oh-my-openagent와 gstack의 패턴을 참고하여 연구 환경에 맞게 설계했습니다.
 
+> 📖 **상세 가이드**: [docs/GUIDE.md](docs/GUIDE.md)에 아키텍처, 스킬 사용법, 안전 메커니즘의 내부 동작이 자세히 정리되어 있습니다.
+
 ---
 
 ## 핵심 개념
