@@ -144,7 +144,7 @@ your-research-project/
 │       ├── diagnose/SKILL.md
 │       ├── document/SKILL.md
 │       └── reflect/SKILL.md
-├── .agent/
+├── .agents/
 │   ├── rules/research-roles.md    ← Antigravity 역할 규칙
 │   └── workflows/research-cycle.md ← 연구 사이클 워크플로우
 ├── .research/

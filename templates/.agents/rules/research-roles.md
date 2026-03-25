@@ -1,6 +1,6 @@
 # Research Roles — Antigravity 규칙
 
-이 파일은 Antigravity(Gemini)가 `.agent/rules/`에서 자동으로 읽는 규칙입니다.
+이 파일은 Antigravity(Gemini)가 `.agents/rules/`에서 자동으로 읽는 규칙입니다.
 
 ---
 

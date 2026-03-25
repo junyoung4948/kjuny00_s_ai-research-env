@@ -1,6 +1,6 @@
 # Research Cycle Workflow
 
-이 파일은 Antigravity(Gemini)가 `.agent/workflows/`에서 참조하는 연구 사이클 워크플로우입니다.
+이 파일은 Antigravity(Gemini)가 `.agents/workflows/`에서 참조하는 연구 사이클 워크플로우입니다.
 
 ---
 

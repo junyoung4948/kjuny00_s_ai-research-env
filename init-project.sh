@@ -36,8 +36,8 @@ DIRS=(
   ".claude/skills/document"
   ".claude/skills/reflect"
   ".claude/hooks"
-  ".agent/rules"
-  ".agent/workflows"
+  ".agents/rules"
+  ".agents/workflows"
   "profiling/scripts"
   "profiling/results"
   "simulation/configs"
@@ -88,10 +88,10 @@ for SKILL in brainstorm experiment-design validate analyze diagnose document ref
   copy_if_not_exists "$TEMPLATE_DIR/.claude/skills/$SKILL/SKILL.md" "$PROJECT_DIR/.claude/skills/$SKILL/SKILL.md"
 done
 
-# 6. .agent/ rules + workflows
-echo "[6/7] .agent/ rules + workflows..."
-copy_if_not_exists "$TEMPLATE_DIR/.agent/rules/research-roles.md" "$PROJECT_DIR/.agent/rules/research-roles.md"
-copy_if_not_exists "$TEMPLATE_DIR/.agent/workflows/research-cycle.md" "$PROJECT_DIR/.agent/workflows/research-cycle.md"
+# 6. .agents/ rules + workflows
+echo "[6/7] .agents/ rules + workflows..."
+copy_if_not_exists "$TEMPLATE_DIR/.agents/rules/research-roles.md" "$PROJECT_DIR/.agents/rules/research-roles.md"
+copy_if_not_exists "$TEMPLATE_DIR/.agents/workflows/research-cycle.md" "$PROJECT_DIR/.agents/workflows/research-cycle.md"
 
 # 7. .research/ 초기 컨텐츠
 echo "[7/7] .research/ 초기 컨텐츠..."
@@ -108,7 +108,7 @@ echo "프로젝트 구조:"
 echo "  $PROJECT_DIR/"
 echo "  ├── AGENTS.md, CLAUDE.md, GEMINI.md"
 echo "  ├── .claude/  (settings, hooks, skills)"
-echo "  ├── .agent/   (rules, workflows)"
+echo "  ├── .agents/  (rules, workflows, skills)"
 echo "  ├── .research/ (context, wisdom, decisions, plans, feedback)"
 echo "  ├── profiling/ (scripts, results[FROZEN])"
 echo "  ├── simulation/ (configs, scripts, results[FROZEN])"
