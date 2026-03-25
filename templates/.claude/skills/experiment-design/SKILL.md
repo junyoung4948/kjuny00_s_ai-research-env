@@ -109,6 +109,11 @@ The output must include a researcher-confirmed parameter table. Unconfirmed = in
 - Omit baseline definition
 - Assume tool availability without verification
 
+## Completion Status
+
+End every output with one of: DONE, DONE_WITH_CONCERNS, BLOCKED, NEEDS_CONTEXT.
+See AGENTS.md Section 12.
+
 ## Output
 
 | Role | Output File |

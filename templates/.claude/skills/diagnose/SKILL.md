@@ -97,6 +97,24 @@ I will NOT attempt a 4th hypothesis without researcher input.
 ...
 ```
 
+### Iron Law: No Fix Without Root Cause
+
+**Never apply a fix before identifying the root cause.**
+- Band-aid fixes (commenting out code, adding retries, suppressing errors) are prohibited until root cause is understood.
+- "It works now" is not evidence of a fix. Explain WHY it works.
+
+### Scope Lock
+
+During diagnosis, restrict changes to the failing component's scope:
+- Do not modify files unrelated to the diagnosed issue.
+- If the fix requires changes outside initial scope → escalate to researcher first.
+
+### Confusion Score
+
+Track cumulative confusion during this diagnosis session.
+See AGENTS.md Section 8 for scoring rules.
+Report current score in the Diagnosis Report if it exceeds 10%.
+
 ## FROZEN Directory Warning
 
 Files in `profiling/results/` and `simulation/results/` cannot be modified.
@@ -115,6 +133,11 @@ Each hypothesis must specify the log lines, error messages, or code paths that w
 - Attempt a 4th hypothesis without escalation
 - Modify FROZEN result files
 - Claim a fix works without re-running the failing test
+
+## Completion Status
+
+End every output with one of: DONE, DONE_WITH_CONCERNS, BLOCKED, NEEDS_CONTEXT.
+See AGENTS.md Section 12.
 
 ## Output
 

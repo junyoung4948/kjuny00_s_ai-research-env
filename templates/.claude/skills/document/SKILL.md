@@ -74,6 +74,11 @@ Every technical claim must reference the source artifact file path and specific 
 - Make claims without experimental evidence
 - Delete limitations sections
 
+## Completion Status
+
+End every output with one of: DONE, DONE_WITH_CONCERNS, BLOCKED, NEEDS_CONTEXT.
+See AGENTS.md Section 12.
+
 ## Output
 
 | Role | Output File |

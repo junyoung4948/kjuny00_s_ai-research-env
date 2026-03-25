@@ -64,6 +64,11 @@ Each idea in the review must cite at least one related paper, prior result, or s
 - Claim ideas are "validated" without evidence
 - Dismiss ideas without stated reasoning
 
+## Completion Status
+
+End every output with one of: DONE, DONE_WITH_CONCERNS, BLOCKED, NEEDS_CONTEXT.
+See AGENTS.md Section 12.
+
 ## Output
 
 | Role | Output File |

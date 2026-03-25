@@ -70,6 +70,11 @@ Every claim must cite specific numbers: "X increased Y%, from A to B" format.
 - Jump from correlation to causation
 - Omit inconvenient data points
 
+## Completion Status
+
+End every output with one of: DONE, DONE_WITH_CONCERNS, BLOCKED, NEEDS_CONTEXT.
+See AGENTS.md Section 12.
+
 ## Output
 
 | Role | Output File |

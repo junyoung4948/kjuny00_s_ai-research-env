@@ -106,6 +106,11 @@ The verdict table must include specific numbers and comparisons for each item. A
 - Ignore anomalies without explanation
 - Assign PASS verdict when CONDITIONAL or FAIL items exist
 
+## Completion Status
+
+End every output with one of: DONE, DONE_WITH_CONCERNS, BLOCKED, NEEDS_CONTEXT.
+See AGENTS.md Section 12.
+
 ## Output
 
 | Output File |

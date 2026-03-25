@@ -95,6 +95,11 @@ Each insight must specify which experiment or event it came from.
 - Record insights without specificity
 - Change scope-mode without researcher approval
 
+## Completion Status
+
+End every output with one of: DONE, DONE_WITH_CONCERNS, BLOCKED, NEEDS_CONTEXT.
+See AGENTS.md Section 12.
+
 ## Output
 
 | Output File | Description |
