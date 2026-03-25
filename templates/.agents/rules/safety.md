@@ -53,7 +53,9 @@ When making decisions that affect the research (parameters, tools, methods):
 
 ---
 
-## Evidence-Based Completion
+## Evidence-Based Completion (Iron Law)
+
+**Claiming work is complete without verification is dishonesty, not efficiency.**
 
 Do not claim completion without evidence:
 - Script written → include execution output (stdout/exit code)
@@ -61,3 +63,54 @@ Do not claim completion without evidence:
 - Analysis done → cite specific metrics ("X increased Y%, from A to B")
 - Design complete → include confirmed parameter table
 - Insight recorded → specify which experiment/event it came from
+- Diagnosis done → explain WHY the fix works, not just "it works now"
+
+---
+
+## Escalation Format (System-Wide)
+
+When escalating (3-Strike, blocked, or insufficient information), use this format:
+
+```
+STATUS: BLOCKED | NEEDS_CONTEXT
+REASON: [1-2 sentences explaining why]
+ATTEMPTED: [what was tried, numbered]
+RECOMMENDATION: [specific next step for the researcher]
+```
+
+---
+
+## Confusion Score (Self-Regulation)
+
+Track cumulative confusion during debugging and script implementation.
+3-Strike catches consecutive failures; Confusion Score catches gradual drift.
+
+| Event | Score Change |
+|-------|-------------|
+| Each failed fix/hypothesis | +15% |
+| Each fix touching >3 files | +10% |
+| After 5th parameter adjustment | +2% per additional |
+| Touching files outside initial scope | +20% |
+| Reverting a previous change | +15% |
+
+- **> 25%** → STOP → Escalate to researcher with score breakdown
+- **Hard cap: 10 iterations** → Stop unconditionally
+
+---
+
+## Decision Classification (Mechanical vs Taste)
+
+Not every decision needs researcher input. Classify before asking:
+
+**Mechanical** — One clearly right answer based on evidence/documentation:
+- Follow existing project patterns (DRY)
+- Choose the simpler of equivalent solutions (Explicit > Clever)
+- Formatting, naming convention, file location choices
+- → Auto-decide silently. Log in output.
+
+**Taste** — Reasonable people could disagree:
+- Research direction, parameter values, methodology trade-offs
+- Anything that changes what we measure or how we interpret it
+- → Ask researcher (Atomic Decision applies).
+
+**Rule**: If unsure → treat as Taste (ask).
