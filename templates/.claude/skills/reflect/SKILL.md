@@ -1,6 +1,8 @@
 ---
 name: reflect
-description: 회고 — 연구 사이클을 되돌아보며 인사이트를 정리하고, context/wisdom을 갱신합니다.
+description: >
+  Retrospective — review the research cycle, organize insights, and update context/wisdom.
+  회고, 인사이트 정리, 교훈 기록.
 allowed-tools:
   - Read
   - Glob
@@ -10,78 +12,93 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-# /reflect — 회고
+# /reflect — Retrospective
 
-## 역할
+## Role
 
-- **Lead**: Claude (Memory 시스템으로 세션 간 연속성 유지)
+- **Lead**: Claude (Memory system for cross-session continuity)
 
-## 사전 확인 (필수)
+## Prerequisites (Required)
 
-1. `.research/context.md` — 현재 연구 맥락
-2. `.research/wisdom.md` — 기존 인사이트
-3. `.research/decisions.md` — 기존 결정 기록
-4. 최근 작업의 관련 artifact들 (plans, feedback, logs)
+1. `.research/context.md` — Current research context
+2. `.research/wisdom.md` — Existing insights
+3. `.research/decisions.md` — Existing decision records
+4. Recent work artifacts (plans, feedback, logs)
 
-## Claude의 행동 (Lead)
+## Claude's Behavior (Lead)
 
-### Phase 1: 사실 수집
-1. 최근 연구 사이클에서 수행한 작업을 정리합니다:
-   - 어떤 가설을 검증했는가?
-   - 실험 결과는 어떠했는가?
-   - 예상과 다른 점이 있었는가?
+### Phase 1: Gather Facts
+1. Summarize the work done in the recent research cycle:
+   - Which hypotheses were tested?
+   - What were the experiment results?
+   - What differed from expectations?
 
-### Phase 2: 인사이트 도출
-2. 다음 질문에 답합니다:
-   - **성공**: 무엇이 잘 되었는가? 왜?
-   - **실패**: 무엇이 실패했는가? 왜?
-   - **놀라움**: 예상과 달랐던 점은?
-   - **교훈**: 다음에 적용할 수 있는 교훈은?
-   - **도구/프로세스**: 시뮬레이터, 분석 방법 등에서 배운 팁은?
+### Phase 2: Extract Insights
+2. Answer the following questions:
+   - **Success**: What went well? Why?
+   - **Failure**: What failed? Why?
+   - **Surprise**: What was unexpected?
+   - **Lessons**: What can be applied next time?
+   - **Tools/Process**: Tips learned about simulators, analysis methods, etc.?
 
-### Phase 3: 회고록 작성
-3. `.research/retros/{date}.md`를 작성합니다:
+### Phase 3: Write Retrospective
+3. Write `.research/retros/{date}.md`:
 
 ```markdown
-# 회고: {date}
+# Retrospective: {date}
 
-## 이번 사이클 요약
-- 기간: ...
-- 목표: ...
-- 결과: ...
+## Cycle Summary
+- Period: ...
+- Goal: ...
+- Outcome: ...
 
-## 잘 된 점
+## What Went Well
 - ...
 
-## 아쉬운 점
+## What Could Improve
 - ...
 
-## 예상과 달랐던 점
+## Unexpected Findings
 - ...
 
-## 교훈
+## Lessons Learned
 - ...
 
-## 다음 단계 제안
+## Suggested Next Steps
 - ...
 ```
 
-### Phase 4: 컨텍스트 갱신
-4. `.research/wisdom.md`에 새 인사이트를 추가합니다.
-   - 형식: `- [{date}] {인사이트 내용}`
-   - **기존 항목은 삭제하지 마세요** (추가만)
+### Phase 4: Update Context
+4. Add new insights to `.research/wisdom.md`:
+   - Place under the appropriate category: **Learnings**, **Pitfalls**, or **Tool Tips**
+   - Format: `- [YYYY-MM-DD] {insight content}`
+   - **Never delete existing entries** (append only)
 
-5. `.research/context.md`를 현재 상태에 맞게 갱신합니다.
-   - 진행 상황, 다음 단계 등을 업데이트
+5. Update `.research/context.md` to reflect current state:
+   - Update progress, next steps, etc.
 
-6. 연구자에게 다음을 확인합니다:
-   - scope-mode 변경이 필요한가?
-   - 연구 방향 수정이 필요한가?
+6. Confirm with researcher:
+   - Is a scope-mode change needed?
+   - Is a research direction change needed?
 
-## 출력
+## Slop Check
 
-| 출력 파일 | 설명 |
-|----------|------|
-| `.research/retros/{date}.md` | 회고 기록 |
-| `.research/wisdom.md` | 인사이트 추가 (갱신) |
-| `.research/context.md` | 연구 맥락 갱신 |
+Record only genuine insights. No generic lessons like "try harder" or "be more careful."
+
+## Evidence Required
+
+Each insight must specify which experiment or event it came from.
+
+## Must NOT
+
+- Delete existing wisdom entries
+- Record insights without specificity
+- Change scope-mode without researcher approval
+
+## Output
+
+| Output File | Description |
+|------------|-------------|
+| `.research/retros/{date}.md` | Retrospective record |
+| `.research/wisdom.md` | Insights added (updated) |
+| `.research/context.md` | Research context updated |

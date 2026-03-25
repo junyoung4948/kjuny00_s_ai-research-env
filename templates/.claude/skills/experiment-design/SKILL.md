@@ -1,6 +1,8 @@
 ---
 name: experiment-design
-description: 실험 설계 — 변수 통제, 파라미터 공간 정의, 실험 방법론을 체계적으로 명세합니다.
+description: >
+  Experiment design — systematic specification of variable control, parameter spaces, and methodology.
+  실험 설계, 파라미터 정의, 변수 통제.
 allowed-tools:
   - Read
   - Glob
@@ -9,83 +11,108 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-# /experiment-design — 실험 설계
+# /experiment-design — Experiment Design
 
-## 역할
+## Role
 
-- **Lead**: Claude (변수 통제, 파라미터 공간 정의에 정밀 추론)
-- **Support**: Gemini (탐색적 제안)
+- **Lead**: Claude (precise reasoning for variable control, parameter space definition)
+- **Support**: Gemini (exploratory suggestions)
 
-## 사전 확인 (필수)
+## Prerequisites (Required)
 
-1. `.research/context.md` — 현재 연구 맥락
-2. `.research/scope-mode.txt` — 현재 모드 확인
-3. `.research/plans/hypothesis-{topic}-final.md` — 확정된 가설
-4. `.research/wisdom.md` — 과거 실험 교훈
+1. `.research/context.md` — Current research context
+2. `.research/scope-mode.txt` — Check current mode
+3. `.research/plans/hypothesis-{topic}-final.md` — Finalized hypothesis
+4. `.research/wisdom.md` — Past experiment lessons
 
-**Scope Mode 제한**: `EXPLORATION` 모드에서는 파라미터를 확정하지 말고 방향성만 논의하세요.
+**Scope Mode restriction**: In `EXPLORATION` mode, discuss direction only — do not finalize parameters.
 
-## Claude의 행동 (Lead)
+## Claude's Behavior (Lead)
 
-### Phase 1: 연구자와 Atomic Decision
-**한 번에 하나씩** 다음 항목을 연구자에게 확인합니다:
+### Phase 1: Atomic Decision with Researcher
+Confirm **one item at a time** with the researcher:
 
-1. **목표 변수 (Dependent Variable)**: 무엇을 측정할 것인가?
-2. **독립 변수 (Independent Variable)**: 무엇을 변화시킬 것인가?
-3. **통제 변수 (Control Variable)**: 무엇을 고정할 것인가?
-4. **도구/시뮬레이터**: 어떤 도구를 사용할 것인가?
-5. **파라미터 범위**: 각 변수의 탐색 범위는?
-6. **베이스라인**: 비교 기준은?
-7. **성공 기준**: 어떤 결과가 가설을 지지/반박하는가?
+1. **Dependent Variable**: What will we measure?
+2. **Independent Variable**: What will we vary?
+3. **Control Variable**: What will we hold constant?
+4. **Tool/Simulator**: Which tool will we use?
+5. **Parameter Ranges**: Exploration range for each variable?
+6. **Baseline**: What is the comparison reference?
+7. **Success Criteria**: What result supports/refutes the hypothesis?
 
-> ⚠️ 여러 결정을 한꺼번에 묶어서 진행하지 마세요 (Atomic Decision 원칙).
+> Do not bundle multiple decisions into a single proposal (Atomic Decision principle).
 
-### Phase 2: 실험 계획서 작성
-모든 결정이 확인되면 다음 구조로 작성합니다:
+### Phase 2: Write Experiment Plan
+Once all decisions are confirmed, write in this structure:
 
 ```markdown
-# 실험 계획: {name}
+# Experiment Plan: {name}
 
-## 가설
-(hypothesis-final에서 인용)
+## Hypothesis
+(Quoted from hypothesis-final)
 
-## 실험 변수
-| 유형 | 변수 | 값/범위 |
-|------|------|---------|
+## Experimental Variables
+| Type | Variable | Values/Range |
+|------|----------|-------------|
 | Independent | ... | ... |
 | Dependent | ... | ... |
 | Control | ... | ... |
 
-## 도구 및 환경
-- 시뮬레이터: ...
-- 워크로드: ...
-- 하드웨어/환경: ...
+## Tools and Environment
+- Simulator: ...
+- Workload: ...
+- Hardware/Environment: ...
 
-## 실험 매트릭스
-(전체 파라미터 조합)
+## Experiment Matrix
+(Full parameter combinations)
 
-## 베이스라인
+## Baseline
 ...
 
-## 성공 기준
+## Success Criteria
 ...
 
-## 예상 소요 시간
-...
+## Effort Estimate
+| Tag | Meaning |
+|-----|---------|
+| Quick | <1 hour (config change, rerun existing script) |
+| Short | 1-4 hours (small script, few parameter sweeps) |
+| Medium | 1-2 days (new simulation setup, mid-scale DSE) |
+| Large | 3+ days (new simulator model, large sweep, new tool integration) |
+
+Estimated effort for this experiment: {Tag} — {rationale}
+
+## Must NOT (for this experiment)
+- (List experiment-specific prohibitions)
 ```
 
-### Phase 3: decisions.md 업데이트
-핵심 설계 결정을 `.research/decisions.md`에 기록합니다.
+### Phase 3: Update decisions.md
+Record key design decisions in `.research/decisions.md`.
 
 ## Hard Gate
 
-이 스킬에서는 **코드 작성, 파일 편집, 명령 실행이 차단**됩니다.
-설계와 계획 수립에만 집중하세요.
+Code writing, file editing, and command execution are **blocked** in this skill.
+Focus exclusively on design and planning.
 
-## 출력
+## Slop Check
 
-| 역할 | 출력 파일 |
-|------|----------|
+Do not build automation frameworks. Define the simplest experiment that tests the hypothesis.
+
+## Evidence Required
+
+The output must include a researcher-confirmed parameter table. Unconfirmed = incomplete.
+
+## Must NOT
+
+- Bundle multiple decisions into one proposal
+- Set parameters without researcher confirmation
+- Omit baseline definition
+- Assume tool availability without verification
+
+## Output
+
+| Role | Output File |
+|------|------------|
 | Lead (Claude) | `.research/plans/experiment-{name}-draft.md` |
 | Support (Gemini) | `.research/plans/experiment-{name}-review.md` |
-| 최종 (Lead 반영) | `.research/plans/experiment-{name}-final.md` |
+| Final (Lead incorporates) | `.research/plans/experiment-{name}-final.md` |

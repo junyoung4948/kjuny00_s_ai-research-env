@@ -1,6 +1,8 @@
 ---
 name: brainstorm
-description: 가설 수립 — 넓은 탐색으로 연구 아이디어를 발산하고, 논리적 허점을 검증합니다.
+description: >
+  Hypothesis generation — broad exploration to diverge research ideas and verify logical gaps.
+  가설 수립, 브레인스토밍, 아이디어 탐색.
 allowed-tools:
   - Read
   - Glob
@@ -9,48 +11,63 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-# /brainstorm — 가설 수립
+# /brainstorm — Hypothesis Generation
 
-## 역할
+## Role
 
-- **Lead**: Gemini (넓은 컨텍스트로 논문 참조, 아이디어 연결)
-- **Support (Claude)**: Lead의 draft를 논리적으로 검증하여 review 작성
+- **Lead**: Gemini (broad context for cross-referencing papers, connecting ideas)
+- **Support (Claude)**: Logically verify Lead's draft and write review
 
-## 사전 확인 (필수)
+## Prerequisites (Required)
 
-1. `.research/context.md` — 현재 연구 맥락
-2. `.research/scope-mode.txt` — 현재 모드 확인
-3. `.research/wisdom.md` — 과거 실패/성공 패턴
+1. `.research/context.md` — Current research context
+2. `.research/scope-mode.txt` — Check current mode
+3. `.research/wisdom.md` — Past failure/success patterns
 
-**Scope Mode 제한**: `REFINEMENT` 또는 `FOCUSED` 모드에서는 새로운 방향 탐색을 자제하세요.
+**Scope Mode restriction**: In `REFINEMENT` or `FOCUSED` mode, avoid exploring new directions.
 
-## Claude의 행동 (Support)
+## Claude's Behavior (Support)
 
-### Phase 1: draft 검토
-1. `.research/plans/hypothesis-{topic}-draft.md`를 읽습니다.
-2. 각 가설에 대해 다음을 검증합니다:
-   - 논리적 일관성: 전제 → 결론 흐름에 비약이 없는가?
-   - 실현 가능성: 우리 환경(시뮬레이터, 하드웨어)에서 검증 가능한가?
-   - 기존 연구와의 차별점: 이미 해결된 문제를 다시 풀고 있지 않은가?
-   - wisdom.md의 과거 교훈과 충돌하지 않는가?
+### Phase 1: Review Draft
+1. Read `.research/plans/hypothesis-{topic}-draft.md`.
+2. Verify each hypothesis:
+   - **Logical consistency**: Is the premise → conclusion flow free of logical leaps?
+   - **Feasibility**: Can this be tested in our environment (simulators, hardware)?
+   - **Novelty**: Are we re-solving an already-solved problem?
+   - **Wisdom check**: Does this conflict with past lessons in wisdom.md?
 
-### Phase 2: review 작성
-3. `.research/plans/hypothesis-{topic}-review.md`를 작성합니다.
-4. 각 가설별로 구조화된 피드백:
-   - **강점**: 논리적으로 탄탄한 부분
-   - **약점/우려**: 발견된 논리적 허점
-   - **제안**: 보완 방향 또는 대안
-   - **추천 우선순위**: 가설 간 상대적 유망도
+### Phase 2: Write Review
+3. Write `.research/plans/hypothesis-{topic}-review.md`.
+4. Structured feedback per hypothesis:
+   - **Strengths**: Logically sound aspects
+   - **Weaknesses/Concerns**: Identified logical gaps
+   - **Suggestions**: Directions for improvement or alternatives
+   - **Priority recommendation**: Relative promise ranking among hypotheses
 
 ## Hard Gate
 
-이 스킬에서는 **코드 작성, 파일 편집, 명령 실행이 차단**됩니다.
-사고와 분석에만 집중하세요.
+Code writing, file editing, and command execution are **blocked** in this skill.
+Focus exclusively on thinking and analysis.
 
-## 출력
+## Slop Check
 
-| 역할 | 출력 파일 |
-|------|----------|
+Do not propose experiments or frameworks. Ideas only. See AGENTS.md Section 10.
+
+## Evidence Required
+
+Each idea in the review must cite at least one related paper, prior result, or specific observation as supporting rationale.
+
+## Must NOT
+
+- Generate code
+- Finalize parameters
+- Claim ideas are "validated" without evidence
+- Dismiss ideas without stated reasoning
+
+## Output
+
+| Role | Output File |
+|------|------------|
 | Lead (Gemini) | `.research/plans/hypothesis-{topic}-draft.md` |
 | Support (Claude) | `.research/plans/hypothesis-{topic}-review.md` |
-| 최종 (Lead 반영) | `.research/plans/hypothesis-{topic}-final.md` |
+| Final (Lead incorporates) | `.research/plans/hypothesis-{topic}-final.md` |

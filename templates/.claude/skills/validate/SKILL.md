@@ -1,6 +1,8 @@
 ---
 name: validate
-description: 결과 검증 — 실험 결과의 수치 범위, 일관성, 재현성을 체계적으로 검증합니다.
+description: >
+  Result validation — systematically verify numerical ranges, consistency, and reproducibility of experiment results.
+  결과 검증, 수치 확인, 일관성 체크.
 allowed-tools:
   - Read
   - Glob
@@ -9,89 +11,103 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-# /validate — 결과 검증
+# /validate — Result Validation
 
-## 역할
+## Role
 
-- **Lead**: Claude (수치 범위 검증, 일관성 체크에 정밀 추론)
+- **Lead**: Claude (precise reasoning for numerical range verification, consistency checks)
 
-## 사전 확인 (필수)
+## Prerequisites (Required)
 
-1. `.research/context.md` — 현재 연구 맥락
-2. `.research/plans/experiment-{name}-final.md` — 실험 설계서
-3. 실험 결과 파일 (위치를 연구자에게 확인)
+1. `.research/context.md` — Current research context
+2. `.research/plans/experiment-{name}-final.md` — Experiment design
+3. Experiment result files (confirm location with researcher)
 
-## Claude의 행동 (Lead)
+## Claude's Behavior (Lead)
 
 ### Phase 1: Sanity Check
-1. **수치 범위 검증**: 결과값이 물리적/논리적으로 합리적인 범위 내인가?
-   - 예: IPC가 음수이거나 비현실적으로 높지 않은가?
-   - 예: 에너지 소비가 0이거나 무한대가 아닌가?
-2. **단위 확인**: 모든 수치의 단위가 올바른가?
-3. **결측값 확인**: 누락된 데이터 포인트가 없는가?
+1. **Numerical range verification**: Are result values within physically/logically reasonable bounds?
+   - e.g., Is IPC negative or unrealistically high?
+   - e.g., Is energy consumption zero or infinite?
+2. **Unit verification**: Are all units correct?
+3. **Missing data check**: Are there any missing data points?
 
-### Phase 2: 일관성 검증
-4. **내부 일관성**: 서로 관련된 메트릭들이 일관된 패턴을 보이는가?
-   - 예: 캐시 미스율 증가 시 메모리 대역폭도 증가하는가?
-5. **베이스라인 비교**: 베이스라인 결과가 알려진 값과 일치하는가?
-6. **트렌드 검증**: 파라미터 변화에 따른 결과 트렌드가 직관과 일치하는가?
+### Phase 2: Consistency Verification
+4. **Internal consistency**: Do related metrics show consistent patterns?
+   - e.g., Does memory bandwidth increase when cache miss rate increases?
+5. **Baseline comparison**: Do baseline results match known values?
+6. **Trend verification**: Do results follow expected trends as parameters change?
 
-### Phase 3: 재현성 확인
-7. 동일 설정 재실행 시 결과가 허용 오차 내에서 일치하는가?
-8. 랜덤 시드가 고정되어 있는가? (해당 시)
+### Phase 3: Reproducibility Check
+7. Do identical configurations produce results within acceptable tolerance?
+8. Are random seeds fixed? (if applicable)
 
-### Phase 4: 검증 보고서 작성
+### Phase 4: Write Validation Report
 
 ```markdown
-# 검증 보고서: {name}
+# Validation Report: {name}
 
-## 검증 대상
-- 실험: ...
-- 결과 파일: ...
+## Validation Target
+- Experiment: ...
+- Result files: ...
 
 ## Sanity Check
-| 항목 | 결과 | 비고 |
-|------|------|------|
-| 수치 범위 | ✅/⚠️/❌ | ... |
-| 단위 | ✅/⚠️/❌ | ... |
-| 결측값 | ✅/⚠️/❌ | ... |
+| Item | Result | Notes |
+|------|--------|-------|
+| Numerical range | PASS/WARN/FAIL | ... |
+| Units | PASS/WARN/FAIL | ... |
+| Missing data | PASS/WARN/FAIL | ... |
 
-## 일관성 검증
-| 항목 | 결과 | 비고 |
-|------|------|------|
-| 내부 일관성 | ✅/⚠️/❌ | ... |
-| 베이스라인 | ✅/⚠️/❌ | ... |
-| 트렌드 | ✅/⚠️/❌ | ... |
+## Consistency Verification
+| Item | Result | Notes |
+|------|--------|-------|
+| Internal consistency | PASS/WARN/FAIL | ... |
+| Baseline | PASS/WARN/FAIL | ... |
+| Trends | PASS/WARN/FAIL | ... |
 
-## 재현성
-| 항목 | 결과 | 비고 |
-|------|------|------|
+## Reproducibility
+| Item | Result | Notes |
+|------|--------|-------|
 
-## 종합 판정
-- [ ] PASS — 결과 신뢰 가능
-- [ ] CONDITIONAL — 일부 항목 추가 확인 필요
-- [ ] FAIL — 재실험 또는 디버깅 필요
+## Overall Verdict
+- [ ] PASS — Results are trustworthy
+- [ ] CONDITIONAL — Some items need further verification
+- [ ] FAIL — Re-experiment or debugging needed
 
-## 발견 사항
+## Findings
 ...
 ```
 
-## Bash 사용 제한
+## Bash Usage Restriction
 
-Bash 도구는 **읽기 전용 목적**으로만 사용하세요:
-- 결과 파일 파싱 (awk, python 스크립트 등)
-- 수치 비교/계산
-- 로그 확인
+Bash is allowed for **read-only purposes** only:
+- Parsing result files (awk, python scripts, etc.)
+- Numerical comparison/calculation
+- Log inspection
 
-**금지**: 실험 재실행, 파일 수정, 새 프로세스 시작
+**Prohibited**: Re-running experiments, modifying files, starting new processes
 
-## FROZEN 디렉토리 주의
+## FROZEN Directory Warning
 
-`profiling/results/`와 `simulation/results/`는 읽기 전용입니다.
-원본을 복사하여 분석하거나, 직접 읽기만 하세요.
+`profiling/results/` and `simulation/results/` are read-only.
+Copy originals for analysis or read them directly.
 
-## 출력
+## Slop Check
 
-| 출력 파일 |
-|----------|
+Report only what the data shows. Do not speculate on causes.
+
+## Evidence Required
+
+The verdict table must include specific numbers and comparisons for each item. An empty "Notes" column is not acceptable.
+
+## Must NOT
+
+- Modify original result files
+- Ignore anomalies without explanation
+- Assign PASS verdict when CONDITIONAL or FAIL items exist
+
+## Output
+
+| Output File |
+|------------|
 | `.research/feedback/validation-{name}.md` |

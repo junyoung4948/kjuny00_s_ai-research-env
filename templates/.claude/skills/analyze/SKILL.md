@@ -1,6 +1,8 @@
 ---
 name: analyze
-description: 결과 분석 — 실험 결과의 패턴, 트렌드, 이상치를 파악하고 시각화를 추천합니다.
+description: >
+  Result analysis — identify patterns, trends, and anomalies in experiment results, recommend visualizations.
+  결과 분석, 패턴 파악, 트렌드, 이상치 분석.
 allowed-tools:
   - Read
   - Glob
@@ -9,55 +11,69 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-# /analyze — 결과 분석
+# /analyze — Result Analysis
 
-## 역할
+## Role
 
-- **Lead**: Gemini (큰 컨텍스트로 대량 데이터 패턴 파악, 멀티모달)
-- **Support (Claude)**: Lead의 분석에 대한 수치 정확성 검증
+- **Lead**: Gemini (large context for pattern detection in bulk data, multimodal)
+- **Support (Claude)**: Verify numerical accuracy of Lead's analysis
 
-## 사전 확인 (필수)
+## Prerequisites (Required)
 
-1. `.research/context.md` — 현재 연구 맥락
-2. `.research/scope-mode.txt` — 현재 모드 확인
-3. `.research/plans/experiment-{name}-final.md` — 실험 설계서
-4. `.research/feedback/validation-{name}.md` — 검증 보고서 (있는 경우)
-5. `.research/wisdom.md` — 과거 분석 패턴
+1. `.research/context.md` — Current research context
+2. `.research/scope-mode.txt` — Check current mode
+3. `.research/plans/experiment-{name}-final.md` — Experiment design
+4. `.research/feedback/validation-{name}.md` — Validation report (if available)
+5. `.research/wisdom.md` — Past analysis patterns
 
-**Scope Mode 제한**: `WRITING` 모드에서는 새 분석을 시작하지 말고 기존 분석을 정리하세요.
+**Scope Mode restriction**: In `WRITING` mode, do not start new analysis — organize existing results instead.
 
-## Claude의 행동 (Support)
+## Claude's Behavior (Support)
 
-### Phase 1: Gemini 분석 검토
-1. `.research/feedback/analysis-{name}-draft.md`를 읽습니다.
-2. 다음을 검증합니다:
-   - **수치 정확성**: Gemini가 인용한 수치가 원본 데이터와 일치하는가?
-   - **통계적 주장**: 주장의 근거가 되는 계산이 올바른가?
-   - **비교의 공정성**: 서로 다른 조건을 공정하게 비교하고 있는가?
-   - **누락된 관점**: Gemini가 놓친 중요한 패턴이나 이상치가 있는가?
+### Phase 1: Review Gemini's Analysis
+1. Read `.research/feedback/analysis-{name}-draft.md`.
+2. Verify:
+   - **Numerical accuracy**: Do Gemini's cited numbers match the raw data?
+   - **Statistical claims**: Are calculations behind claims correct?
+   - **Fair comparison**: Are different conditions compared fairly?
+   - **Missing perspectives**: Are there important patterns or anomalies Gemini missed?
 
-### Phase 2: review 작성
-3. `.research/feedback/analysis-{name}-review.md`를 작성합니다.
-4. 구조화된 피드백:
-   - **확인된 발견**: 수치적으로 정확한 분석 결과
-   - **수정 필요**: 오류가 있는 수치나 주장
-   - **추가 분석 제안**: 놓친 패턴이나 추가 시각화 추천
-   - **시각화 피드백**: 추천된 시각화 방법에 대한 의견
+### Phase 2: Write Review
+3. Write `.research/feedback/analysis-{name}-review.md`.
+4. Structured feedback:
+   - **Confirmed findings**: Numerically accurate analysis results
+   - **Corrections needed**: Erroneous numbers or claims
+   - **Additional analysis suggestions**: Missed patterns or extra visualizations
+   - **Visualization feedback**: Comments on recommended visualization methods
 
 ## Hard Gate
 
-이 스킬에서는 **코드 작성, 파일 편집, 명령 실행이 차단**됩니다.
-분석 검토와 피드백 작성에만 집중하세요.
+Code writing, file editing, and command execution are **blocked** in this skill.
+Focus exclusively on analysis review and feedback.
 
-## FROZEN 디렉토리 주의
+## FROZEN Directory Warning
 
-`profiling/results/`와 `simulation/results/`는 읽기 전용입니다.
-분석 시 원본을 직접 읽기만 하세요.
+`profiling/results/` and `simulation/results/` are read-only.
+Read originals directly for analysis.
 
-## 출력
+## Slop Check
 
-| 역할 | 출력 파일 |
-|------|----------|
+Scale analysis complexity to data volume. Do not over-interpret sparse data.
+
+## Evidence Required
+
+Every claim must cite specific numbers: "X increased Y%, from A to B" format.
+
+## Must NOT
+
+- Apply statistics disproportionate to data scale
+- Jump from correlation to causation
+- Omit inconvenient data points
+
+## Output
+
+| Role | Output File |
+|------|------------|
 | Lead (Gemini) | `.research/feedback/analysis-{name}-draft.md` |
 | Support (Claude) | `.research/feedback/analysis-{name}-review.md` |
-| 최종 (Lead 반영) | `.research/feedback/analysis-{name}-final.md` |
+| Final (Lead incorporates) | `.research/feedback/analysis-{name}-final.md` |

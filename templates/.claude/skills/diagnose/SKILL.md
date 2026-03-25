@@ -1,6 +1,8 @@
 ---
 name: diagnose
-description: 실패 진단 — 실험 실패나 예상치 못한 결과의 원인을 체계적으로 추적합니다. 3-Strike Rule 적용.
+description: >
+  Failure diagnosis — systematically trace causes of experiment failures or unexpected results. 3-Strike Rule enforced.
+  실패 진단, 디버깅, 에러 추적, 3-Strike Rule.
 allowed-tools:
   - Read
   - Glob
@@ -10,100 +12,114 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-# /diagnose — 실패 진단
+# /diagnose — Failure Diagnosis
 
-## 역할
+## Role
 
-- **Lead**: Claude (체계적 디버깅, 로그 파싱, 3-Strike Rule)
+- **Lead**: Claude (systematic debugging, log parsing, 3-Strike Rule)
 
-## 사전 확인 (필수)
+## Prerequisites (Required)
 
-1. `.research/context.md` — 현재 연구 맥락
-2. `.research/plans/experiment-{name}-final.md` — 실험 설계서
-3. 관련 로그 파일 (위치를 연구자에게 확인)
-4. `.research/wisdom.md` — 과거 실패 패턴
+1. `.research/context.md` — Current research context
+2. `.research/plans/experiment-{name}-final.md` — Experiment design
+3. Relevant log files (confirm location with researcher)
+4. `.research/wisdom.md` — Past failure patterns
 
-## Claude의 행동 (Lead)
+## Claude's Behavior (Lead)
 
-### 3-Strike Rule (필수 준수)
+### 3-Strike Rule (Mandatory)
 
-**최대 3개 가설까지만 순차 검증합니다.**
+**Test at most 3 hypotheses sequentially.**
 
 #### Strike 1
-1. 증상을 정리하고 가장 유력한 가설을 세웁니다.
-2. 로그/코드/설정을 분석하여 검증합니다.
-3. 결과를 기록합니다.
-   - 성공 → 수정 사항 적용 후 종료
-   - 실패 → Strike 2로
+1. Summarize symptoms and form the most likely hypothesis.
+2. Analyze logs/code/configuration to verify.
+3. Record result.
+   - Success → Apply fix, done
+   - Failure → Strike 2
 
 #### Strike 2
-4. 첫 번째 가설의 실패 원인을 반영하여 두 번째 가설을 세웁니다.
-5. 검증합니다.
-   - 성공 → 수정 사항 적용 후 종료
-   - 실패 → Strike 3으로
+4. Reflecting on why the first hypothesis failed, form a second hypothesis.
+5. Verify.
+   - Success → Apply fix, done
+   - Failure → Strike 3
 
 #### Strike 3
-6. 세 번째 가설을 세우고 검증합니다.
-   - 성공 → 수정 사항 적용 후 종료
-   - 실패 → **에스컬레이션**
+6. Form and verify a third hypothesis.
+   - Success → Apply fix, done
+   - Failure → **Escalate**
 
-#### 에스컬레이션 (3-Strike 실패 시)
+#### Escalation (After 3 Strikes)
 ```
-🚨 3개 가설 모두 실패했습니다. 추가 정보가 필요합니다.
+All 3 hypotheses failed. Additional information is needed.
 
-시도한 가설:
-1. {가설1} → {실패 이유}
-2. {가설2} → {실패 이유}
-3. {가설3} → {실패 이유}
+Attempted hypotheses:
+1. {hypothesis1} → {failure reason}
+2. {hypothesis2} → {failure reason}
+3. {hypothesis3} → {failure reason}
 
-추가로 필요한 정보:
+Additional information needed:
 - ...
 
-절대로 4번째 가설을 자의적으로 시도하지 않습니다.
+I will NOT attempt a 4th hypothesis without researcher input.
 ```
 
-### 진단 보고서 구조
+### Diagnosis Report Structure
 
 ```markdown
-# 진단 보고서: {name}
+# Diagnosis Report: {name}
 
-## 증상
-- 발생 시점: ...
-- 에러 메시지: ...
-- 예상 결과 vs 실제 결과: ...
+## Symptoms
+- Occurrence: ...
+- Error message: ...
+- Expected vs actual result: ...
 
-## 가설 검증
-### 가설 1: {설명}
-- 근거: ...
-- 검증 방법: ...
-- 결과: ✅ 확인 / ❌ 기각
-- (기각 시) 기각 이유: ...
+## Hypothesis Verification
+### Hypothesis 1: {description}
+- Rationale: ...
+- Verification method: ...
+- Result: CONFIRMED / REJECTED
+- (If rejected) Rejection reason: ...
 
-### 가설 2: {설명}
+### Hypothesis 2: {description}
 ...
 
-### 가설 3: {설명}
+### Hypothesis 3: {description}
 ...
 
-## 근본 원인
+## Root Cause
 ...
 
-## 수정 사항
+## Fix Applied
 ...
 
-## 교훈 (wisdom.md에 추가)
+## Lessons (add to wisdom.md)
 ...
 ```
 
-## FROZEN 디렉토리 주의
+## FROZEN Directory Warning
 
-`profiling/results/`와 `simulation/results/`의 파일은 수정할 수 없습니다.
-디버깅 시에도 원본 결과는 보존하세요.
+Files in `profiling/results/` and `simulation/results/` cannot be modified.
+Preserve original results even during debugging.
 
-## 출력
+## Slop Check
 
-| 출력 파일 |
-|----------|
+Cite specific log lines or error messages. Do not speculate without evidence.
+
+## Evidence Required
+
+Each hypothesis must specify the log lines, error messages, or code paths that were verified.
+
+## Must NOT
+
+- Attempt a 4th hypothesis without escalation
+- Modify FROZEN result files
+- Claim a fix works without re-running the failing test
+
+## Output
+
+| Output File |
+|------------|
 | `.research/feedback/diagnosis-{name}.md` |
 
-진단에서 얻은 교훈은 `.research/wisdom.md`에도 추가하세요.
+Add lessons learned to `.research/wisdom.md` under the appropriate category.
