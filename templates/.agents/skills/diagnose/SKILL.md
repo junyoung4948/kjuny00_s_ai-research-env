@@ -1,6 +1,8 @@
 ---
 name: diagnose
-description: Use when an experiment fails, produces unexpected results, or a script errors — triggers 3-Strike diagnostic protocol
+description: >
+  Failure diagnosis — systematically trace causes of experiment failures or unexpected results. 3-Strike Rule enforced.
+  실패 진단, 디버깅, 에러 추적, 3-Strike Rule.
 claude-model: opus
 allowed-tools:
   - Read

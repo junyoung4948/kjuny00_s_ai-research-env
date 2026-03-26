@@ -1,6 +1,8 @@
 ---
 name: brainstorm
-description: Use when generating or evaluating research hypotheses, exploring new ideas, or discussing potential research directions
+description: >
+  Hypothesis generation — broad exploration to diverge research ideas and verify logical gaps.
+  가설 수립, 브레인스토밍, 아이디어 탐색.
 claude-model: sonnet
 allowed-tools:
   - Read
@@ -78,4 +80,6 @@ See AGENTS.md Section 12.
 
 ## Auto-Handoff (Optional)
 
-When invoked non-interactively by Antigravity via `invoke-claude.sh`, Claude acts as Support and writes the review directly to the specified output path. The full cycle completes within one Antigravity turn — no researcher intervention needed.
+After Lead (Gemini) completes the draft, it can automatically request Claude to review:
+- **Antigravity Lead**: `bash scripts/invoke-claude.sh --skill brainstorm --action review --artifact ".research/plans/hypothesis-{topic}-draft.md" --output ".research/plans/hypothesis-{topic}-review.md"`
+- Once review is complete, read it directly and incorporate into `*-final.md` — no researcher intervention needed.

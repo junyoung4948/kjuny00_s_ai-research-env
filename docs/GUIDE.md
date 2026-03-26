@@ -32,9 +32,10 @@
 ├── .agents/               ← [Gemini 전용]
 │   ├── skills/            ← 7개 스킬 (.claude/skills/에서 미러링, 동일 내용)
 │   ├── rules/             ← 상시 자동 로딩
-│   │   ├── safety.md         ← FROZEN, 3-Strike, Atomic Decision 등
-│   │   ├── anti-slop.md      ← Anti-Slop + Anti-Sycophancy + Completion Status
-│   │   └── research-roles.md ← Lead/Support 행동 규칙
+│   │   ├── safety.md                    ← FROZEN, 3-Strike, Atomic Decision 등
+│   │   ├── anti-slop.md                 ← Anti-Slop + Anti-Sycophancy + Completion Status
+│   │   ├── research-roles.md            ← Lead/Support 행동 규칙
+│   │   └── rationalization-prevention.md ← LLM 규칙 우회 패턴 및 반박 테이블
 │   └── workflows/
 │       └── research-cycle.md ← 4단계 연구 사이클
 │
@@ -71,7 +72,7 @@
 | **공유 (내용)** | `skills/*/SKILL.md` | 양쪽 | 동일한 스킬 내용 (디렉토리만 `.claude/skills/` vs `.agents/skills/`) |
 | **Claude 전용** | `.claude/*` | Claude만 | settings.json (hooks, 권한), allowed-tools (Hard Gate) |
 | **Claude 전용** | `CLAUDE.md` | Claude만 | Claude 역할 지시, 스킬 가이드 |
-| **Gemini 전용** | `.agents/rules/*` | Gemini만 | 상시 규칙 (safety, anti-slop, research-roles) |
+| **Gemini 전용** | `.agents/rules/*` | Gemini만 | 상시 규칙 (safety, anti-slop, research-roles, rationalization-prevention) |
 | **Gemini 전용** | `.agents/workflows/*` | Gemini만 | `/` 커맨드 (research-cycle) |
 | **Gemini 전용** | `GEMINI.md` | Gemini만 | Gemini 역할 지시 |
 
@@ -97,6 +98,11 @@
 | Atomic Decision (하나씩 확인) | 자체 설계 | AGENTS.md §8 |
 | Scope Mode (4단계 모드) | 자체 설계 | AGENTS.md §4 + `.research/scope-mode.txt` |
 | Lead/Support 핸드오프 | 자체 설계 | AGENTS.md §2, §5 |
+| Rationalization Prevention (규칙 우회 차단) | superpowers (TDD + verification-before-completion) | AGENTS.md §10.5 + `.agents/rules/rationalization-prevention.md` |
+| CSO Description Convention (skill 라우팅 최적화) | superpowers (writing-skills) | 모든 SKILL.md `description` 필드 "Use when..." 형식 |
+| Forced-Invocation Directive (스킬 invoke 강제) | superpowers (using-superpowers) | AGENTS.md §9 |
+| Verification Gate Function (완료 주장 절차화) | superpowers (verification-before-completion) | AGENTS.md §8 |
+| Integration Test Infrastructure (hook 테스트) | superpowers (testing.md) | `ai-research-env/tests/` |
 
 ### 4. Hard Gate vs Soft Rules
 
@@ -128,18 +134,21 @@ cd /your/research/project
 bash /path/to/ai-research-env/init-project.sh .
 ```
 
-**내부 동작** (8단계):
+**내부 동작** (11단계):
 
 | 단계 | 작업 | 동작 방식 |
 |------|------|-----------|
-| 1 | 디렉토리 생성 | `.research/`, `.claude/`, `.agents/`, `profiling/`, `simulation/`, `docs/` 등 28개 디렉토리 |
+| 1 | 디렉토리 생성 | `.research/`, `.claude/`, `.agents/`, `profiling/`, `simulation/`, `docs/`, `scripts/`, `.research/handoff/queue/`, `done/` 등 31개 디렉토리 |
 | 2 | 코어 파일 복사 | `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` → **이미 존재하면 건너뜀** (`copy_if_not_exists`) |
 | 3 | `.gitignore`, `.aiexclude` | `.aiexclude`는 `.claude/`를 Gemini에게 숨김 |
 | 4 | Claude 설정 + hooks | `settings.json`, `check-freeze.sh`, `check-careful.sh` → **항상 최신 버전으로 덮어씀** |
-| 5 | Claude 스킬 7개 | `.claude/skills/*/SKILL.md` → 이미 존재하면 건너뜀 |
-| 6 | Antigravity 스킬 미러링 | `.claude/skills/`의 내용을 `.agents/skills/`로 복사 (동일 소스) |
-| 7 | Antigravity rules + workflows | `safety.md`, `anti-slop.md`, `research-roles.md`, `research-cycle.md` |
-| 8 | `.research/` 초기 파일 | `context.md`, `wisdom.md`, `decisions.md`, `scope-mode.txt`, `pipeline-status.md` |
+| 5 | Claude 스킬 9개 | `.claude/skills/*/SKILL.md` (기존 7 + cross-review + pickup) → 이미 존재하면 건너뜀 |
+| 6 | Antigravity 스킬 미러링 | `.agents/skills/`에서 직접 복사 (9개 스킬) |
+| 7 | Antigravity rules + workflows | `safety.md`, `anti-slop.md`, `research-roles.md`, `rationalization-prevention.md`, `research-cycle.md` |
+| 8 | Integration tests | `tests/test-check-freeze.sh`, `tests/test-check-careful.sh` → hook 단위 테스트 |
+| 9 | `.research/` 초기 파일 | `context.md`, `wisdom.md`, `decisions.md`, `scope-mode.txt`, `pipeline-status.md` |
+| 10 | Auto-Handoff 스크립트 | `scripts/invoke-claude.sh`, `scripts/create-handoff.sh` → **항상 최신 버전으로 덮어씀** + chmod +x |
+| 11 | Handoff README | `.research/handoff/README.md` → 프로토콜 문서 복사 |
 
 **설계 의도**: hooks(4단계)는 항상 최신화하고, 연구 콘텐츠(2, 5, 8단계)는 기존 파일을 보존하여 연구자의 수정 사항이 날아가지 않도록 함.
 
@@ -187,6 +196,7 @@ bash /path/to/ai-research-env/init-project.sh .
 - Hard Gate: 코드 작성 불가 (설계에만 집중)
 - Effort Estimate 태그 포함 (Quick/Short/Medium/Large)
 - 실험별 Must NOT 목록 생성
+- **Implementation Steps** (자동 트리거): 시뮬레이션이 >1개 파일 수정 또는 >20줄 추가 시 → 실험 계획에 구현 단계별 스텝 목록 포함 (각 스텝: What | 대상 파일 | 검증 명령). Atomic Decision으로 연구자 확인 후 진행
 
 #### `/validate` — 결과 검증
 
@@ -289,9 +299,33 @@ bash /path/to/ai-research-env/init-project.sh .
 
 **scope-mode.txt 변경**: 연구자만 가능. AI는 변경 불가 (`.research/` 디렉토리 규칙으로 강제).
 
-### 8. 안전 메커니즘
+### 8. Dynamic Model Selection (최적 모델 자동 선택)
 
-#### 8-1. Hooks (물리적 차단) — Claude 전용
+환경은 항상 최고의 성능과 안정성을 가진 모델을 사용할 수 있도록 자동 갱신 메커니즘을 제공합니다.
+
+#### 8-1. 아키텍처
+- **기준 모델**: Claude Code의 기본 모델은 `opusplan`으로 설정됩니다. (Plan 모드: Opus, Execution 모드: Sonnet 자동 전환)
+- **자동 갱신 (Cron)**: 업무 시간(10:00 ~ 20:00) 동안 매시간 `sync-models.py`가 백그라운드에서 실행됩니다.
+- **환경 변수 주입**: 스크립트가 `~/.claude/model-env.sh`를 갱신하고, 이는 `.bashrc`/`.zshrc`를 통해 셸에 로드됩니다.
+- **결과**: `opusplan`이 참조하는 `ANTHROPIC_DEFAULT_OPUS_MODEL`과 `ANTHROPIC_DEFAULT_SONNET_MODEL`이 항상 최적의 모델 버전으로 자동 오버라이드됩니다.
+
+#### 8-2. 선택 알고리즘 (sync-models.py)
+단순한 1시간 단위 최고점이 아니라 연구에 적합한 "복합 판단"을 내립니다:
+1. **자격 심사**: 7일 평균 점수(`periodAvg`)가 55점 미만이거나, API에서 `critical` 수준의 성능 저하(degradation)가 보고된 모델은 즉시 후보에서 제외됩니다.
+2. **실시간 랭킹**: 자격을 통과한 모델 중 실시간 점수(`currentScore`)가 가장 높은 모델을 1위로 선정합니다.
+3. **Hysteresis (플립플롭 방지)**: 새로운 1위 모델이 현재 사용 중인 모델보다 **5점 이하**로 높다면 교체하지 않습니다. (모델이 매시간 바뀌어 컨텍스트가 흔들리는 현상 방지)
+
+#### 8-3. 온디맨드 심층 분석 (/check-models)
+Antigravity에게 `/check-models` 명령을 내리면, 실시간 벤치마크 데이터를 심층 분석합니다:
+- 각 모델의 점수 안정성(`stability`), 신뢰 구간 하한(`confidenceLower`), 추세(`trend`) 분석
+- 코딩 벤치마크(correctness, codeQuality 등) 7-axis 세부 역량 검토
+- 인사이트를 종합하여 모델 유지/변경을 제안 (실제 변경 여부는 연구자의 판단)
+
+---
+
+### 9. 안전 메커니즘
+
+#### 9-1. Hooks (물리적 차단) — Claude 전용
 
 **check-freeze.sh** — Edit/Write 도구 호출 시 자동 실행
 
@@ -418,6 +452,49 @@ Escalation Format 출력:
 **Taste 결정**(합리적으로 의견이 갈리는 경우)만 연구자에게 질문:
 - 연구 방향, 파라미터 값, 방법론 선택
 
+#### 8-8. Verification Gate Function — 양쪽 모델
+
+완료 주장 전 **5단계 절차 필수**:
+
+```
+1. IDENTIFY: 이 주장을 증명할 명령/검사는?
+2. RUN: 검증 실행 (이번 세션에서, 기억에 의존 금지)
+3. READ: 전체 출력 확인. exit code. 오류 수 확인.
+4. VERIFY: 출력이 실제로 주장을 뒷받침하는가?
+   - NO → 실제 상태를 증거와 함께 보고
+   - YES → 5단계로
+5. CLAIM: 증거와 함께 주장 (관련 출력 포함)
+```
+
+어떤 단계라도 건너뛰면 "검증"이 아니라 "주장". DONE/DONE_WITH_CONCERNS 선언 전 항상 적용.
+
+#### 8-9. Rationalization Prevention — 양쪽 모델
+
+LLM은 규칙에서 빠져나갈 논리 경로를 능동적으로 구성함. 연구 컨텍스트 주요 패턴과 반박:
+
+| 합리화 | 현실 |
+|--------|------|
+| "실험이 너무 작아서 공식 설계 불필요" | 규모는 변수 통제를 면제하지 않음 |
+| "결과가 어떻게 나올지 이미 앎" | 예측 ≠ 증거. 실행하라 |
+| "연구자가 잡아줄 것" | Human-in-the-loop은 방향 결정용, 오류 수정용이 아님 |
+| "이번 실패는 단순 — 3-Strike 불필요" | 단순했다면 첫 번째 수정이 작동했을 것 |
+
+전체 테이블: AGENTS.md §10.5 + `.agents/rules/rationalization-prevention.md`
+
+#### 8-10. Forced-Invocation Directive — 양쪽 모델
+
+작업 키워드가 AGENTS.md §9 테이블에 매핑되면 **반드시** 해당 스킬을 invoke해야 함. 판단 재량 없음.
+
+```
+"analyze" 키워드 감지 → /analyze 스킬 invoke 전까지 분석 시작 불가
+"debug" 키워드 감지 → /diagnose 스킬 invoke 전까지 진단 시작 불가
+```
+
+Red Flags (스킬 건너뛰기 합리화):
+- "잠깐 살펴보기만 할게요" → 스킬이 HOW를 정의함. 먼저 invoke
+- "스킬 내용 기억함" → 스킬은 변함. 현재 버전을 invoke
+- "연구자가 이미 방법을 알려줬음" → 지시는 WHAT, 스킬은 HOW
+
 ### 9. Lead/Support 핸드오프
 
 **전체 흐름**:
@@ -478,6 +555,86 @@ Lead가 *-final.md 생성
 검토 시 참조한 파일, 배경 지식
 ```
 
+### 9.5 Auto-Handoff (자동 오케스트레이션)
+
+수동 handoff의 반복 작업을 줄이기 위한 자동화 레이어. 기존 수동 방식과 공존하며, 큰 결정(가설 선택, 파라미터 값 등)에는 여전히 연구자 개입이 필요합니다.
+
+#### 핵심 원리: 비대칭 호출 구조
+
+Antigravity는 bash 명령을 실행할 수 있어 `claude -p`를 직접 호출할 수 있습니다. 반대 방향은 불가능하므로 signal 파일로 대체합니다.
+
+| 방향 | 메커니즘 | 연구자 개입 |
+|------|----------|------------|
+| **Antigravity → Claude** | `bash scripts/invoke-claude.sh` 직접 실행 | 없음 |
+| **Claude → Antigravity** | `.research/handoff/queue/`에 signal 생성 + `/pickup` | 1회 (`/pickup` 실행) |
+
+#### invoke-claude.sh 내부 동작
+
+```
+Antigravity에서 invoke-claude.sh 실행
+  ↓
+--skill 인자로 해당 SKILL.md 읽기
+  ↓
+YAML frontmatter의 claude-model 필드 추출 (opus / sonnet)
+  ↓
+claude -p --model {모델} "{skill 행동 규칙 + artifact 경로 포함 프롬프트}"
+  ↓
+Claude가 결과 파일 생성 → invoke-claude.sh가 종료
+  ↓
+Antigravity가 결과 파일 읽기 → 반영 → *-final.md 생성
+```
+
+`claude-model` 필드가 없으면 기본값 `sonnet` 사용. `--model` 인자로 수동 오버라이드 가능.
+
+#### Handoff Queue (Signal 파일 시스템)
+
+Claude→Antigravity 방향의 비동기 요청을 전달합니다.
+
+```
+.research/handoff/
+├── queue/   ← 처리 대기 signal (JSON)
+└── done/    ← 완료 signal (아카이브)
+```
+
+Signal 형식: `{YYYYMMDD-HHmmss}-{from}-to-{to}-{action}.json`
+
+핵심 필드:
+- `requires_human: true` → 자동 처리 금지, 연구자 확인 요청 (AGENTS.md §8 Taste 결정)
+- `status`: `pending` → `processing` → `done` / `failed`
+
+#### /cross-review — 교차 검증 전체 사이클
+
+어느 에이전트에서도 "이걸 반대쪽에서 검증받고 반영까지 해줘"를 한 명령으로 실행:
+
+**Antigravity에서 시작 (완전 자동)**:
+```
+[Gemini] /cross-review 실행
+  → invoke-claude.sh로 Claude 호출 → Claude review 작성
+  → review 읽기 → feedback 반영 → *-final.md 생성
+  → 연구자에게 결과 보고
+(연구자 개입 0회)
+```
+
+**Claude Code에서 시작 (반자동)**:
+```
+[Claude] /cross-review 실행
+  → create-handoff.sh로 signal 생성
+  → 연구자에게 안내: "Antigravity에서 /pickup 실행해주세요"
+[연구자] Antigravity에서 /pickup 실행
+  → Gemini review + invoke-claude.sh로 Claude 반영 → *-final.md
+  → 연구자에게 전체 결과 보고
+(연구자 개입 1회)
+```
+
+#### /pickup — Signal 처리
+
+queue에 쌓인 요청을 처리합니다. 세션 시작 시 또는 연구자 요청 시 실행.
+
+- Claude `/pickup`: `"to": "claude"` signal 처리 → review 작성 → 필요 시 follow-up signal 생성
+- Antigravity `/pickup`: `"to": "antigravity"` signal 처리 → 작업 수행 → 필요 시 `invoke-claude.sh`로 후속 Claude 작업 자동 호출 (전체 사이클을 한 턴에 완료)
+
+---
+
 ### 10. .research/ 상태 파일
 
 | 파일 | 역할 | 읽기 | 쓰기 | 규칙 |
@@ -515,10 +672,15 @@ Lead가 *-final.md 생성
 | `.claude/skills/diagnose/SKILL.md` | 실패 진단 — Lead(Claude), 3-Strike + Iron Law + Scope Lock + Confusion Score |
 | `.claude/skills/document/SKILL.md` | 논문 작성 — Support(Claude), 원본 수정 금지 |
 | `.claude/skills/reflect/SKILL.md` | 회고 — Lead(Claude), wisdom.md 업데이트 |
+| `.claude/skills/cross-review/SKILL.md` | 교차 검증 — Claude 측 (signal 생성 + 응답 처리) |
+| `.claude/skills/pickup/SKILL.md` | Signal 처리 — Claude 측 (queue 스캔 + 작업 실행) |
+| `.agents/skills/cross-review/SKILL.md` | 교차 검증 — Antigravity 측 (invoke-claude.sh 호출 + 반영) |
+| `.agents/skills/pickup/SKILL.md` | Signal 처리 — Antigravity 측 (queue 처리 + Claude 후속 호출) |
 | `.agents/skills/*/SKILL.md` | 위 7개와 동일 내용 (Antigravity 미러링) |
 | `.agents/rules/safety.md` | Gemini 상시 안전 규칙 (FROZEN, 3-Strike, Atomic Decision, Confusion Score 등) |
 | `.agents/rules/anti-slop.md` | Gemini 상시 Anti-Slop + Anti-Sycophancy + Completion Status |
 | `.agents/rules/research-roles.md` | Gemini Lead/Support 행동 규칙 |
+| `.agents/rules/rationalization-prevention.md` | LLM 규칙 우회 패턴 및 반박 테이블 (Skill-Skipping Red Flags 포함) |
 | `.agents/workflows/research-cycle.md` | 4단계 연구 사이클 워크플로우 |
 | `.research/context.md` | 연구 맥락 (세션 시작 시 필독) |
 | `.research/wisdom.md` | 누적 인사이트 (3-카테고리, append-only) |
@@ -530,7 +692,12 @@ Lead가 *-final.md 생성
 
 | 경로 | 설명 |
 |------|------|
-| `init-project.sh` | 8단계 프로젝트 초기화 스크립트 |
+| `init-project.sh` | 11단계 프로젝트 초기화 스크립트 |
+| `templates/scripts/invoke-claude.sh` | Antigravity→Claude 자동 호출 스크립트 (claude-model 자동 선택) |
+| `templates/scripts/create-handoff.sh` | Claude→Antigravity signal 파일 생성 유틸리티 |
+| `templates/.research/handoff/README.md` | Handoff 프로토콜 문서 (signal 형식, lifecycle) |
+| `tests/test-check-freeze.sh` | check-freeze.sh hook 단위 테스트 (4 test cases) |
+| `tests/test-check-careful.sh` | check-careful.sh hook 단위 테스트 (4 test cases) |
 | `setup.sh` | 글로벌 설정 설치 (선택사항) |
 | `global/claude/CLAUDE.md` | 글로벌 Claude 기본 규칙 |
 | `global/claude/settings.json` | 글로벌 기본 권한 |
@@ -547,3 +714,21 @@ Lead가 *-final.md 생성
 - [ ] Gemini 스킬에서 Lead 역할의 상세 행동 정의 (현재 SKILL.md는 Claude Support 관점 중심)
 - [ ] `.research/handoff/` 디렉토리의 분석 문서 정리 (gstack, OmO 분석은 개발용이므로 프로덕션에서 제거 검토)
 - [ ] 실제 연구 프로젝트에서 init-project.sh 실행 후 end-to-end 테스트
+
+**완료된 harness 개선 이력** (superpowers 분석 결과 반영, 2026-03-26):
+- [x] Verification Gate Function → AGENTS.md §8
+- [x] Forced-Invocation Directive + Red Flags → AGENTS.md §9
+- [x] Rationalization Prevention → AGENTS.md §10.5 + `.agents/rules/rationalization-prevention.md`
+- [x] CSO Description Convention → 모든 SKILL.md description "Use when..." 형식
+- [x] Implementation Steps → `/experiment-design` SKILL.md (>1 file or >20 lines trigger)
+- [x] Integration Test Infrastructure → `tests/` 디렉토리 (8/8 pass)
+
+**완료된 harness 개선 이력** (Auto-Handoff 시스템 추가, 2026-03-26):
+- [x] `claude-model` 필드 → 모든 14개 SKILL.md (invoke-claude.sh가 자동 읽어 모델 선택)
+- [x] `scripts/invoke-claude.sh` → Antigravity→Claude 완전 자동 호출
+- [x] `scripts/create-handoff.sh` → Claude→Antigravity signal 생성
+- [x] `.research/handoff/queue/`, `done/` → signal 파일 큐 시스템
+- [x] `/cross-review` skill (Claude + Antigravity) → 교차 검증 전체 사이클 자동화
+- [x] `/pickup` skill (Claude + Antigravity) → 대기 signal 처리
+- [x] AGENTS.md §5.1 Auto-Handoff Protocol + §9 keyword mapping
+- [x] CLAUDE.md, GEMINI.md, research-cycle.md Auto-Handoff 섹션 추가

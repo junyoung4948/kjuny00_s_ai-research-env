@@ -1,6 +1,8 @@
 ---
 name: experiment-design
-description: Use when designing experiments, defining parameters, specifying variable control, or planning methodology
+description: >
+  Experiment design — systematic specification of variable control, parameter spaces, and methodology.
+  실험 설계, 파라미터 정의, 변수 통제.
 claude-model: opus
 allowed-tools:
   - Read
@@ -101,22 +103,6 @@ Do not build automation frameworks. Define the simplest experiment that tests th
 
 The output must include a researcher-confirmed parameter table. Unconfirmed = incomplete.
 
-## Implementation Steps
-
-**MANDATORY** when simulation modifies >1 file OR adds >20 lines of code.
-**Optional** otherwise (researcher may request explicitly).
-
-When triggered, append this section to the experiment plan before finalizing:
-
-```
-### Implementation Steps
-1. [What to implement] | Target: [file path] | Verify: [command + expected output]
-2. [What to implement] | Target: [file path] | Verify: [command + expected output]
-...
-```
-
-Each step covers one function or one configuration change. Confirm step list with researcher before proceeding (Atomic Decision).
-
 ## Must NOT
 
 - Bundle multiple decisions into one proposal
@@ -139,6 +125,6 @@ See AGENTS.md Section 12.
 
 ## Auto-Handoff (Optional)
 
-After completing the draft, Claude can create a signal to request Gemini's exploratory review:
+After Lead (Claude) completes the draft, it can create a signal to request Gemini to review:
 - **Claude Lead**: `bash scripts/create-handoff.sh --from claude --to antigravity --action review --skill experiment-design --artifact ".research/plans/experiment-{name}-draft.md"`
 - User runs `/pickup` in Antigravity → Gemini reviews → calls `invoke-claude.sh` to have Claude incorporate feedback.

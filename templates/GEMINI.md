@@ -67,6 +67,32 @@ When producing artifacts, always follow the naming convention:
 
 ---
 
+## Auto-Handoff
+
+See AGENTS.md §5.1 for the full protocol.
+
+### Antigravity → Claude (direct invocation, fully automatic)
+Call Claude Code non-interactively via `invoke-claude.sh`:
+```
+bash scripts/invoke-claude.sh --skill {skill} --action {action} \
+  --artifact "{path}" --output "{path}"
+```
+The script automatically reads the `claude-model` field from the skill's SKILL.md to select the appropriate model (opus/sonnet).
+Once Claude writes the result file, read it directly and incorporate — **no researcher intervention needed**.
+
+### Claude → Antigravity (signal-based)
+Claude creates a signal in `.research/handoff/queue/`.
+Process via `/pickup` at session start or on user request.
+
+### Skills
+- `/cross-review`: Request validation from Claude → incorporate feedback → produce final artifact (automatic)
+- `/pickup`: Process pending requests in `.research/handoff/queue/`
+
+### Check Handoff Queue at Session Start
+At session start, check `.research/handoff/queue/` for any pending signals with `"to": "antigravity"`.
+
+---
+
 ## Wisdom Updates
 
 When you discover new insights, add them to `.research/wisdom.md`:

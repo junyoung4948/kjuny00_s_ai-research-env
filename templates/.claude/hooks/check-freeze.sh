@@ -6,12 +6,12 @@ set -euo pipefail
 
 INPUT=$(cat)
 
-# Extract file_path from tool_input (Edit/Write tools)
-FILE_PATH=$(printf '%s' "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:[[:space:]]*"//;s/"$//' || true)
+# Extract file_path from tool_input — Python primary (handles escaped quotes correctly)
+FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import sys,json; print(json.loads(sys.stdin.read()).get("tool_input",{}).get("file_path",""))' 2>/dev/null || true)
 
-# Python fallback (handles escaped quotes)
+# grep fallback (for environments without Python)
 if [ -z "$FILE_PATH" ]; then
-  FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import sys,json; print(json.loads(sys.stdin.read()).get("tool_input",{}).get("file_path",""))' 2>/dev/null || true)
+  FILE_PATH=$(printf '%s' "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:[[:space:]]*"//;s/"$//' || true)
 fi
 
 # No file_path found — allow
@@ -35,7 +35,7 @@ PROJECT_ROOT="$(pwd)"
 
 for FROZEN in "${FROZEN_DIRS[@]}"; do
   FROZEN_ABS="${PROJECT_ROOT}/${FROZEN}"
-  if [[ "$FILE_PATH" == "$FROZEN_ABS"* ]]; then
+  if [[ "$FILE_PATH" == "$FROZEN_ABS"/* ]] || [[ "$FILE_PATH" == "$FROZEN_ABS" ]]; then
     printf '{"permissionDecision":"deny","message":"[freeze] Blocked: %s is inside FROZEN directory (%s/). Experiment results must not be modified to ensure reproducibility."}\n' "$FILE_PATH" "$FROZEN"
     exit 0
   fi

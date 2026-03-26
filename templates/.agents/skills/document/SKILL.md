@@ -1,6 +1,8 @@
 ---
 name: document
-description: Use when writing papers, reports, or technical documentation of research results
+description: >
+  Paper/report writing — systematically document research results. Gemini drafts, Claude reviews.
+  논문 작성, 보고서 문서화, 기술 교정.
 claude-model: sonnet
 allowed-tools:
   - Read
@@ -88,4 +90,6 @@ See AGENTS.md Section 12.
 
 ## Auto-Handoff (Optional)
 
-When invoked non-interactively by Antigravity via `invoke-claude.sh`, Claude acts as Support and writes the technical review directly to the specified output path. The full cycle completes within one Antigravity turn — no researcher intervention needed.
+After Lead (Gemini) completes the draft, it can automatically request Claude to review:
+- **Antigravity Lead**: `bash scripts/invoke-claude.sh --skill document --action review --artifact "docs/sections/{section}-draft.md" --output "docs/sections/{section}-review.md"`
+- Once review is complete, read it directly and incorporate into `*-final.md` — no researcher intervention needed.

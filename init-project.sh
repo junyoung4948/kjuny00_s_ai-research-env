@@ -21,13 +21,15 @@ if [ "$PROJECT_DIR" = "$SCRIPT_DIR" ]; then
 fi
 
 # 1. Create directory structure
-echo "[1/8] Creating directory structure..."
+echo "[1/11] Creating directory structure..."
 DIRS=(
   ".research/plans"
   ".research/feedback"
   ".research/retros"
   ".research/logs/profiling"
   ".research/logs/simulation"
+  ".research/handoff/queue"
+  ".research/handoff/done"
   ".claude/skills/brainstorm"
   ".claude/skills/experiment-design"
   ".claude/skills/validate"
@@ -35,6 +37,8 @@ DIRS=(
   ".claude/skills/diagnose"
   ".claude/skills/document"
   ".claude/skills/reflect"
+  ".claude/skills/cross-review"
+  ".claude/skills/pickup"
   ".claude/hooks"
   ".agents/rules"
   ".agents/workflows"
@@ -45,6 +49,9 @@ DIRS=(
   ".agents/skills/diagnose"
   ".agents/skills/document"
   ".agents/skills/reflect"
+  ".agents/skills/cross-review"
+  ".agents/skills/pickup"
+  "scripts"
   "profiling/scripts"
   "profiling/results"
   "simulation/configs"
@@ -58,7 +65,7 @@ for DIR in "${DIRS[@]}"; do
 done
 
 # 2. Copy core config files (skip if already exists)
-echo "[2/8] Copying core config files..."
+echo "[2/11] Copying core config files..."
 
 copy_if_not_exists() {
   local src="$1"
@@ -76,12 +83,12 @@ copy_if_not_exists "$TEMPLATE_DIR/CLAUDE.md" "$PROJECT_DIR/CLAUDE.md"
 copy_if_not_exists "$TEMPLATE_DIR/GEMINI.md" "$PROJECT_DIR/GEMINI.md"
 
 # 3. .gitignore, .aiexclude
-echo "[3/8] .gitignore, .aiexclude..."
+echo "[3/11] .gitignore, .aiexclude..."
 copy_if_not_exists "$TEMPLATE_DIR/.gitignore" "$PROJECT_DIR/.gitignore"
 copy_if_not_exists "$TEMPLATE_DIR/.aiexclude" "$PROJECT_DIR/.aiexclude"
 
 # 4. Claude config + hooks
-echo "[4/8] Claude config + hooks..."
+echo "[4/11] Claude config + hooks..."
 copy_if_not_exists "$TEMPLATE_DIR/.claude/settings.json" "$PROJECT_DIR/.claude/settings.json"
 cp "$TEMPLATE_DIR/.claude/hooks/check-freeze.sh" "$PROJECT_DIR/.claude/hooks/check-freeze.sh"
 cp "$TEMPLATE_DIR/.claude/hooks/check-careful.sh" "$PROJECT_DIR/.claude/hooks/check-careful.sh"
@@ -90,26 +97,53 @@ chmod +x "$PROJECT_DIR/.claude/hooks/check-careful.sh"
 echo "  [done] hooks (always overwritten with latest)"
 
 # 5. Claude Skills
-echo "[5/8] Claude Skills (SKILL.md)..."
-for SKILL in brainstorm experiment-design validate analyze diagnose document reflect; do
+echo "[5/11] Claude Skills (SKILL.md)..."
+for SKILL in brainstorm experiment-design validate analyze diagnose document reflect cross-review pickup; do
   copy_if_not_exists "$TEMPLATE_DIR/.claude/skills/$SKILL/SKILL.md" "$PROJECT_DIR/.claude/skills/$SKILL/SKILL.md"
 done
 
-# 6. Antigravity Skills (mirror from Claude — single source)
-echo "[6/8] Antigravity Skills (mirrored from Claude)..."
-for SKILL in brainstorm experiment-design validate analyze diagnose document reflect; do
-  copy_if_not_exists "$TEMPLATE_DIR/.claude/skills/$SKILL/SKILL.md" "$PROJECT_DIR/.agents/skills/$SKILL/SKILL.md"
+# 6. Antigravity Skills (from .agents/ templates)
+echo "[6/11] Antigravity Skills..."
+for SKILL in brainstorm experiment-design validate analyze diagnose document reflect cross-review pickup; do
+  copy_if_not_exists "$TEMPLATE_DIR/.agents/skills/$SKILL/SKILL.md" "$PROJECT_DIR/.agents/skills/$SKILL/SKILL.md"
 done
 
 # 7. .agents/ rules + workflows
-echo "[7/8] .agents/ rules + workflows..."
+echo "[7/11] .agents/ rules + workflows..."
 copy_if_not_exists "$TEMPLATE_DIR/.agents/rules/research-roles.md" "$PROJECT_DIR/.agents/rules/research-roles.md"
 copy_if_not_exists "$TEMPLATE_DIR/.agents/rules/anti-slop.md" "$PROJECT_DIR/.agents/rules/anti-slop.md"
 copy_if_not_exists "$TEMPLATE_DIR/.agents/rules/safety.md" "$PROJECT_DIR/.agents/rules/safety.md"
+copy_if_not_exists "$TEMPLATE_DIR/.agents/rules/rationalization-prevention.md" "$PROJECT_DIR/.agents/rules/rationalization-prevention.md"
 copy_if_not_exists "$TEMPLATE_DIR/.agents/workflows/research-cycle.md" "$PROJECT_DIR/.agents/workflows/research-cycle.md"
 
-# 8. .research/ initial content
-echo "[8/8] .research/ initial content..."
+# 8. Integration tests
+echo "[8/11] Integration tests..."
+if [ -d "$SCRIPT_DIR/tests" ]; then
+  mkdir -p "$PROJECT_DIR/tests"
+  cp "$SCRIPT_DIR/tests/test-check-freeze.sh" "$PROJECT_DIR/tests/test-check-freeze.sh"
+  cp "$SCRIPT_DIR/tests/test-check-careful.sh" "$PROJECT_DIR/tests/test-check-careful.sh"
+  chmod +x "$PROJECT_DIR/tests/test-check-freeze.sh"
+  chmod +x "$PROJECT_DIR/tests/test-check-careful.sh"
+  echo "  [done] tests/ (hook unit tests)"
+else
+  echo "  [skip] tests/ not found in source"
+fi
+
+# 9. Scripts (invoke-claude.sh, create-handoff.sh)
+echo "[9/11] Scripts..."
+if [ -d "$TEMPLATE_DIR/scripts" ]; then
+  copy_if_not_exists "$TEMPLATE_DIR/scripts/invoke-claude.sh" "$PROJECT_DIR/scripts/invoke-claude.sh"
+  copy_if_not_exists "$TEMPLATE_DIR/scripts/create-handoff.sh" "$PROJECT_DIR/scripts/create-handoff.sh"
+  chmod +x "$PROJECT_DIR/scripts/invoke-claude.sh" 2>/dev/null || true
+  chmod +x "$PROJECT_DIR/scripts/create-handoff.sh" 2>/dev/null || true
+fi
+
+# 10. Handoff protocol
+echo "[10/11] Handoff protocol..."
+copy_if_not_exists "$TEMPLATE_DIR/.research/handoff/README.md" "$PROJECT_DIR/.research/handoff/README.md"
+
+# 11. .research/ initial content
+echo "[11/11] .research/ initial content..."
 copy_if_not_exists "$TEMPLATE_DIR/.research/context.md" "$PROJECT_DIR/.research/context.md"
 copy_if_not_exists "$TEMPLATE_DIR/.research/wisdom.md" "$PROJECT_DIR/.research/wisdom.md"
 copy_if_not_exists "$TEMPLATE_DIR/.research/decisions.md" "$PROJECT_DIR/.research/decisions.md"
@@ -117,14 +151,15 @@ copy_if_not_exists "$TEMPLATE_DIR/.research/scope-mode.txt" "$PROJECT_DIR/.resea
 copy_if_not_exists "$TEMPLATE_DIR/.research/pipeline-status.md" "$PROJECT_DIR/.research/pipeline-status.md"
 
 echo ""
-echo "=== Initialization Complete ==="
+echo "=== Initialization Complete (11 steps) ==="
 echo ""
 echo "Project structure:"
 echo "  $PROJECT_DIR/"
 echo "  ├── AGENTS.md, CLAUDE.md, GEMINI.md"
-echo "  ├── .claude/  (settings, hooks, skills)"
-echo "  ├── .agents/  (rules, workflows, skills)"
-echo "  ├── .research/ (context, wisdom, decisions, plans, feedback)"
+echo "  ├── .claude/  (settings, hooks, skills incl. cross-review, pickup)"
+echo "  ├── .agents/  (rules, workflows, skills incl. cross-review, pickup)"
+echo "  ├── .research/ (context, wisdom, decisions, plans, feedback, handoff)"
+echo "  ├── scripts/  (invoke-claude.sh, create-handoff.sh)"
 echo "  ├── profiling/ (scripts, results[FROZEN])"
 echo "  ├── simulation/ (configs, scripts, results[FROZEN])"
 echo "  └── docs/sections/"

@@ -6,12 +6,12 @@ set -euo pipefail
 
 INPUT=$(cat)
 
-# Extract command from tool_input (Bash tool)
-COMMAND=$(printf '%s' "$INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:[[:space:]]*"//;s/"$//' || true)
+# Extract command from tool_input — Python primary (handles escaped quotes correctly)
+COMMAND=$(printf '%s' "$INPUT" | python3 -c 'import sys,json; print(json.loads(sys.stdin.read()).get("tool_input",{}).get("command",""))' 2>/dev/null || true)
 
-# Python fallback
+# grep fallback (for environments without Python)
 if [ -z "$COMMAND" ]; then
-  COMMAND=$(printf '%s' "$INPUT" | python3 -c 'import sys,json; print(json.loads(sys.stdin.read()).get("tool_input",{}).get("command",""))' 2>/dev/null || true)
+  COMMAND=$(printf '%s' "$INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:[[:space:]]*"//;s/"$//' || true)
 fi
 
 # No command found — allow

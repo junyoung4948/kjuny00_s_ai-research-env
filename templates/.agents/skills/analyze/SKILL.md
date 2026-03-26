@@ -1,6 +1,8 @@
 ---
 name: analyze
-description: Use when interpreting experiment results, identifying patterns or anomalies, or recommending visualizations
+description: >
+  Result analysis — identify patterns, trends, and anomalies in experiment results, recommend visualizations.
+  결과 분석, 패턴 파악, 트렌드, 이상치 분석.
 claude-model: sonnet
 allowed-tools:
   - Read
@@ -84,4 +86,6 @@ See AGENTS.md Section 12.
 
 ## Auto-Handoff (Optional)
 
-When invoked non-interactively by Antigravity via `invoke-claude.sh`, Claude acts as Support and writes the numerical review directly to the specified output path. The full cycle completes within one Antigravity turn — no researcher intervention needed.
+After Lead (Gemini) completes the draft, it can automatically request Claude to review:
+- **Antigravity Lead**: `bash scripts/invoke-claude.sh --skill analyze --action review --artifact ".research/feedback/analysis-{name}-draft.md" --output ".research/feedback/analysis-{name}-review.md"`
+- Once review is complete, read it directly and incorporate into `*-final.md` — no researcher intervention needed.

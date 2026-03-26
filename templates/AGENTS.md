@@ -109,6 +109,51 @@ Files and background knowledge referenced during review
 
 ---
 
+## 5.1 Auto-Handoff Protocol
+
+Additional protocol for automatic handoff between agents. Coexists with Manual Handoff (§5).
+
+### Asymmetric Call Structure
+
+| Direction | Mechanism | Automation Level |
+|---|---|---|
+| **Antigravity → Claude** | Direct CLI call via `invoke-claude.sh` | Fully automatic |
+| **Claude → Antigravity** | Signal file creation → user runs `/pickup` in Antigravity | Semi-automatic (1 user action) |
+
+### Handoff Queue
+
+Requests are delivered as JSON signal files in `.research/handoff/queue/`.
+
+**Signal Lifecycle**:
+1. Sender creates signal in `queue/` (`status: "pending"`)
+2. Receiver starts processing (`status: "processing"`)
+3. On success → moved to `done/` (`status: "done"`)
+4. On failure → remains in `queue/` (`status: "failed"`)
+
+### Direct CLI Invocation (Antigravity → Claude)
+
+Antigravity calls Claude Code non-interactively via `invoke-claude.sh`:
+```
+bash scripts/invoke-claude.sh --skill {skill} --action {action} \
+  --artifact "{path}" --output "{path}"
+```
+`invoke-claude.sh` automatically reads the `claude-model` field from the skill's SKILL.md to select the appropriate model.
+
+### `requires_human` Criteria
+
+If a signal has `requires_human: true`, it is not auto-processed — researcher confirmation is requested.
+Applies when the decision falls under the **Taste** category in Section 8 Decision Classification:
+- Hypothesis selection, research direction changes
+- Parameter value decisions
+- Methodology trade-offs
+
+### Skills
+
+- `/cross-review`: Request validation from the other agent → process feedback → incorporate into final artifact (one full cycle)
+- `/pickup`: Process pending handoff signals in the queue
+
+---
+
 ## 6. .research/ Directory Rules
 
 | File/Folder | Purpose | Read | Write |
@@ -169,6 +214,26 @@ Show, do not claim:
 - Insight recorded → specify which experiment/event it came from
 - Diagnosis done → explain WHY the fix works, not just "it works now"
 
+### Verification Gate Function
+
+Before claiming ANY status (DONE, DONE_WITH_CONCERNS) or expressing satisfaction:
+
+1. **IDENTIFY**: What command or check proves this claim?
+2. **RUN**: Execute the verification (fresh, in this session — not from memory)
+3. **READ**: Read full output. Check exit code. Count errors/warnings.
+4. **VERIFY**: Does the output actually confirm the claim?
+   - If NO → State actual status with evidence
+   - If YES → Proceed to step 5
+5. **CLAIM**: Make the claim WITH the evidence (paste relevant output)
+
+Skipping any step is not verification — it is assertion.
+
+| Claim | IDENTIFY | RUN | VERIFY |
+|---|---|---|---|
+| "Simulation script works" | Execute script with test parameters | `python sim.py --config test.yaml` | Exit code 0, output within expected range |
+| "Results validated" | Re-run validation checks | `python validate.py results/` | All checks PASS, no warnings |
+| "Experiment design complete" | Check all parameters confirmed | Review conversation history | Each parameter has researcher confirmation |
+
 ### Escalation Format (System-Wide)
 
 When escalating (3-Strike, blocked, or insufficient information), use this format:
@@ -221,6 +286,8 @@ Research has higher cost of wrong decisions than software development.
 Even without explicitly invoking `/brainstorm`, `/validate`, etc.,
 requests containing the following keywords should follow the corresponding skill's principles (Hard Gate, Lead/Support, output format):
 
+**Forced-Invocation Directive**: When a research task matches any keyword in the table below, you MUST invoke the corresponding skill before proceeding. Do not attempt the task without it. Skipping a mapped skill — for any reason — is a rule violation, not a judgment call.
+
 | Keywords | Applied Skill |
 |---|---|
 | "brainstorm", "ideas", "hypothesis" | `/brainstorm` |
@@ -230,6 +297,21 @@ requests containing the following keywords should follow the corresponding skill
 | "debug", "error", "failure cause" | `/diagnose` |
 | "paper", "report", "document" | `/document` |
 | "reflect", "retrospective", "lessons learned" | `/reflect` |
+| "cross-review", "get feedback", "verify with other agent", "check with the other side" | `/cross-review` |
+| "pickup", "pending tasks", "process handoff", "check queue" | `/pickup` |
+
+**Skill priority**: Process skills (`/brainstorm`, `/experiment-design`, `/diagnose`) first — they determine HOW to approach the task. Execution skills (`/validate`, `/analyze`) second.
+
+### Red Flags — Skill-Skipping Rationalizations
+
+| Thought | Reality |
+|---|---|
+| "This is just a quick simulation run" | Simulation tasks still require experiment design confirmation (Atomic Decision). |
+| "I need to explore the data first" | Skills tell you HOW to explore. Check for applicable skill first. |
+| "The researcher already told me what to do" | Instructions say WHAT, not HOW. The skill defines the workflow. |
+| "I remember what the skill says" | Skills evolve. Invoke the current version. |
+| "This doesn't need a formal skill" | If a skill exists for this research phase, use it. |
+| "I'll just run one analysis quickly" | Quick analyses without the `/analyze` workflow miss the Anti-Slop checks. |
 
 ---
 
@@ -245,6 +327,23 @@ Before producing any artifact, run through these 6 self-checks.
 | **Documentation Bloat** | "Is my output length proportional to the actual findings?" | 3-line result ≠ 3-page report. Maintain proportionality. |
 | **Hallucinated Expertise** | "Can I point to a specific file, log, or reference for this claim?" | If no evidence, say "I am not certain" instead of asserting. |
 | **Speculative Conclusion** | "Have I separated what the data shows from what I infer?" | Use "The data shows X" vs "This may suggest Y" — keep them distinct. |
+
+---
+
+## 10.5 Rationalization Prevention
+
+LLMs actively construct logical escape routes from rules. This table preemptively closes them.
+
+| Rationalization | Reality |
+|---|---|
+| "This experiment is too small for formal design" | Scale doesn't exempt from variable control. Small experiments with hidden confounds waste more time than formal design costs. |
+| "I already know what the result will be" | Prediction ≠ evidence. Run it. Document the prediction, then compare. |
+| "Just one quick run first" | "Quick runs" without design produce uninterpretable results. Design first, run second. |
+| "The researcher will catch any mistakes" | Human-in-the-loop is for direction decisions, not error correction. Deliver verified work. |
+| "I can skip atomic decision — these parameters obviously go together" | "Obviously" is the most dangerous word in research. Confirm each parameter individually. |
+| "This failure is simple — no need for 3-Strike" | If it were simple, the first fix would have worked. Follow the protocol. |
+| "I'll validate the results later" | Later never comes. Validation is part of the task, not an afterthought. |
+| "The scope mode doesn't really apply here" | Check `.research/scope-mode.txt`. If it says FOCUSED, stay focused. No exceptions. |
 
 ---
 

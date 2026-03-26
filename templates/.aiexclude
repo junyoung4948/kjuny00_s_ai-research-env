@@ -1,3 +1,2 @@
-# Gemini가 접근하면 안 되는 Claude 설정 파일
-.claude/settings.local.json
-.claude/settings.json
+# Hide Claude Code configuration from Gemini (skills are mirrored to .agents/skills/)
+.claude/

@@ -1,6 +1,8 @@
 ---
 name: reflect
-description: Use when a research cycle completes, to organize insights, update context, and record lessons learned
+description: >
+  Retrospective — review the research cycle, organize insights, and update context/wisdom.
+  회고, 인사이트 정리, 교훈 기록.
 claude-model: opus
 allowed-tools:
   - Read

@@ -9,6 +9,9 @@ profiling/results/**/*.csv
 simulation/results/**/*.raw
 simulation/results/**/*.csv
 
+# Handoff 임시 파일
+.research/handoff/*.lock
+
 # 일반적인 연구 산출물 (대용량)
 *.pyc
 __pycache__/

@@ -76,3 +76,21 @@ When reviewing artifacts from phases where Gemini is Lead:
 1. Read `*-draft.md` and write `*-review.md`
 2. **Never modify the original draft** — write feedback in a separate review file only
 3. The researcher will ask Gemini to incorporate the review
+
+---
+
+## Auto-Handoff
+
+See AGENTS.md §5.1 for the full protocol.
+
+### Claude → Antigravity (signal-based)
+1. Create a signal via `bash scripts/create-handoff.sh`
+2. Inform the user: "Please run `/pickup` in Antigravity"
+
+### Antigravity → Claude (direct invocation)
+Antigravity can call Claude non-interactively via `invoke-claude.sh`.
+In this case, Claude applies the skill behavior rules per the prompt instructions and writes results to the specified path.
+
+### Skills
+- `/cross-review`: Request validation from the other agent → incorporate feedback → produce final artifact
+- `/pickup`: Process pending requests in `.research/handoff/queue/`

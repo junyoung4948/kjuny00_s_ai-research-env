@@ -38,6 +38,52 @@ echo "       Antigravity의 전역 설정 경로에 수동으로 복사하세요
 
 echo ""
 echo "=== 설치 완료 ==="
+
+# 3. Dynamic Model Selection 설정
+echo ""
+echo "=== Dynamic Model Selection 설정 ==="
+
+# 3a. 초기 sync 실행
+if command -v python3 &>/dev/null; then
+  python3 "$SCRIPT_DIR/scripts/sync-models.py" && \
+    echo "[done] 초기 모델 동기화 완료" || \
+    echo "[warn] 모델 동기화 실패 (네트워크 확인 필요)"
+else
+  echo "[skip] python3이 없어 모델 동기화를 건너뜁니다."
+fi
+
+# 3b. cron 등록
+bash "$SCRIPT_DIR/scripts/install-cron.sh" 2>/dev/null && \
+  echo "[done] 1시간 단위 cron 등록 완료" || \
+  echo "[warn] cron 등록 실패"
+
+# 3c. 셸 프로파일에 source 추가
+SHELL_RC=""
+if [ -f "$HOME/.zshrc" ]; then
+  SHELL_RC="$HOME/.zshrc"
+elif [ -f "$HOME/.bashrc" ]; then
+  SHELL_RC="$HOME/.bashrc"
+fi
+
+if [ -n "$SHELL_RC" ]; then
+  if ! grep -q "model-env.sh" "$SHELL_RC" 2>/dev/null; then
+    echo '' >> "$SHELL_RC"
+    echo '# AI Research Env — Dynamic Model Selection' >> "$SHELL_RC"
+    echo '[ -f ~/.claude/model-env.sh ] && source ~/.claude/model-env.sh' >> "$SHELL_RC"
+    echo "[done] ${SHELL_RC}에 model-env.sh source 추가 완료"
+  else
+    echo "[skip] ${SHELL_RC}에 이미 model-env.sh source가 존재합니다."
+  fi
+else
+  echo "[warn] .bashrc/.zshrc를 찾을 수 없습니다. 수동으로 추가하세요:"
+  echo "       echo '[ -f ~/.claude/model-env.sh ] && source ~/.claude/model-env.sh' >> ~/.bashrc"
+fi
+
+echo ""
+echo "=== 완료 ==="
+echo ""
+echo "⚠️  현재 터미널에 즉시 적용하려면:"
+echo "    source ~/.claude/model-env.sh"
 echo ""
 echo "다음 단계: 연구 프로젝트에 템플릿을 적용하세요."
 echo "  cd /path/to/your/research-project"

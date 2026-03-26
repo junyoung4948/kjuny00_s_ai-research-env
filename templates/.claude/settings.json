@@ -23,12 +23,47 @@
       }
     ]
   },
+  "model": "claude-sonnet-4-5-20250929",
   "permissions": {
+    "deny": [
+      "Read(~/.ssh/**)",
+      "Read(~/.gnupg/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.config/gcloud/**)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/secrets/**)",
+      "Read(**/credentials)",
+      "Write(~/.ssh/**)",
+      "Write(~/.gnupg/**)",
+      "Write(~/.aws/**)",
+      "Write(**/.env)",
+      "Write(**/.env.*)",
+      "Write(**/secrets/**)",
+      "Bash(sudo *)",
+      "Bash(su *)",
+      "Bash(chmod 777 *)",
+      "Bash(curl * | bash)",
+      "Bash(wget * | bash)",
+      "Bash(curl * | sh)",
+      "Bash(wget * | sh)"
+    ],
     "allow": [
-      "Read",
-      "Glob",
-      "Grep",
-      "WebSearch"
+      "Bash(*)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "MultiEdit(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "WebSearch(*)",
+      "WebFetch(*)",
+      "LS(*)",
+      "TodoRead(*)",
+      "TodoWrite(*)",
+      "Task(*)",
+      "NotebookRead(*)",
+      "NotebookEdit(*)"
     ]
   }
 }

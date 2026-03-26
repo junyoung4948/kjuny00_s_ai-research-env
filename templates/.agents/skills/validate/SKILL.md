@@ -1,6 +1,8 @@
 ---
 name: validate
-description: Use when checking experiment results for correctness, verifying numerical ranges, consistency, or reproducibility
+description: >
+  Result validation — systematically verify numerical ranges, consistency, and reproducibility of experiment results.
+  결과 검증, 수치 확인, 일관성 체크.
 claude-model: opus
 allowed-tools:
   - Read
