@@ -383,3 +383,17 @@ Every skill output must end with an explicit status block:
 
 It is ALWAYS acceptable to report BLOCKED or NEEDS_CONTEXT.
 Bad work is worse than no work. There is no penalty for escalation.
+
+
+---
+
+## 13. Surgical Code Modifications (Implementation Rules)
+
+When analyzing or writing scripts across any research phase, adhere to the strict "Surgical Changes" operational rules to minimize unintended side effects.
+
+| Rule | Constraint |
+|---|---|
+| **Touch only what you must** | Do not "improve" adjacent code, comments, or formatting. Never refactor surrounding code that isn't broken. Match the existing style entirely. |
+| **Clean up only your own mess** | Remove imports/variables/functions ONLY if your specific changes made them unused. Do not remove pre-existing dead code without explicit researcher request. |
+| **No Speculative Flexibility** | Do not add "configurability", abstract flags, or "error handling for impossible scenarios" that the researcher did not explicitly ask for. Write the absolute minimum code to solve the immediate problem. |
+| **Direct Traceability** | Every changed line must trace directly back to the current Scope Mode or user's explicit request. |

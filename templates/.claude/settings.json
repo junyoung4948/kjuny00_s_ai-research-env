@@ -23,7 +23,7 @@
       }
     ]
   },
-  "model": "claude-sonnet-4-5-20250929",
+  "model": "opusplan",
   "permissions": {
     "deny": [
       "Read(~/.ssh/**)",

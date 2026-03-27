@@ -22,13 +22,15 @@ Claude Code와 Gemini를 하나의 연구 프로젝트에서 함께 사용하기
 
 이 프레임워크는 세 오픈소스 프로젝트를 분석하여 설계되었습니다:
 
-1. **[oh-my-openagent](https://github.com/nicekate/oh-my-openagent)** — AGENTS.md를 활용한 크로스 툴 브릿지 패턴, Wisdom 누적 시스템, Category 기반 모델 흐름 가이드
-2. **[gstack](https://github.com/anthropics/gstack)** — Claude Code Skills(Hard Gate), PreToolUse hooks(freeze/careful), artifact 기반 비동기 통신, 3-Strike Rule
+1. **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — AGENTS.md를 활용한 크로스 툴 브릿지 패턴, Wisdom 누적 시스템, Category 기반 모델 흐름 가이드
+2. **[gstack](https://github.com/garrytan/gstack)** — Claude Code Skills(Hard Gate), PreToolUse hooks(freeze/careful), artifact 기반 비동기 통신, 3-Strike Rule
 3. **[superpowers](https://github.com/obra/superpowers)** — Rationalization Prevention Tables, CSO Description Convention, Forced-Invocation Directive, Verification Gate Function
 
 세 프로젝트의 패턴을 참고하여 연구 환경에 맞게 설계했습니다.
 
 > 📖 **상세 가이드**: [docs/GUIDE.md](docs/GUIDE.md)에 아키텍처, 스킬 사용법, 안전 메커니즘의 내부 동작이 자세히 정리되어 있습니다.
+> 
+> 🧠 **오픈소스 레퍼런스 및 아키텍처 분석**: [docs/REFERENCES.md](docs/REFERENCES.md)에 3개의 주요 오픈소스 프로젝트가 어떻게 현재 환경에 적용되었는지 상세한 설명이 있습니다.
 
 ---
 
@@ -55,6 +57,7 @@ Claude Code와 Gemini를 하나의 연구 프로젝트에서 함께 사용하기
 
 두 모델은 API 직접 통신 없이 **파일시스템 artifact로 비동기 소통**합니다.
 
+**수동 방식** (기본):
 ```
 Lead 모델 → *-draft.md    (초안)
     ↓ (연구자가 Support에게 review 요청)
@@ -63,7 +66,7 @@ Support 모델 → *-review.md  (검증/피드백)
 Lead 모델 → *-final.md    (최종본)
 ```
 
-연구자가 모든 handoff를 중재하므로 AI 간 직접 통신의 위험을 방지합니다.
+연구자가 매 handoff를 직접 중재하여 모든 결정을 통제합니다. 루틴 review 사이클은 **Auto-Handoff(§3)** 로 자동화할 수 있으며, 이 경우에도 가설 선택·파라미터 값 등 중요한 결정은 `requires_human` 플래그로 연구자 확인이 강제됩니다.
 
 ### 3. Auto-Handoff (자동 오케스트레이션)
 
@@ -394,8 +397,8 @@ WRITING        # 문서화 — 논문 작성, 새 실험 자제
 - [Claude Code Skills](https://docs.anthropic.com/en/docs/claude-code/skills) — SKILL.md, allowed-tools
 - [Claude Code Hooks](https://docs.anthropic.com/en/docs/claude-code/hooks) — PreToolUse, permissionDecision
 - [AGENTS.md 규격](https://google.github.io/adk-docsite/agents/agents-md/) — Antigravity/Gemini 자동 로딩
-- [oh-my-openagent](https://github.com/nicekate/oh-my-openagent) — 크로스 툴 AI 에이전트 프레임워크
-- [gstack](https://github.com/anthropics/gstack) — Claude Code 기반 풀스택 에이전트
+- [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) — 크로스 툴 AI 에이전트 프레임워크
+- [gstack](https://github.com/garrytan/gstack) — Claude Code 기반 풀스택 에이전트
 
 ---
 
