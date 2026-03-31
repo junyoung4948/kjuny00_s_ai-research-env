@@ -6,25 +6,55 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Flag parsing
+UPDATE=false
+for arg in "$@"; do
+  if [ "$arg" == "--update" ]; then
+    UPDATE=true
+  fi
+done
+
 echo "=== AI Research Environment: 전역 설정 설치 ==="
 
 # 1. Claude Code 전역 설정
 CLAUDE_GLOBAL_DIR="$HOME/.claude"
 mkdir -p "$CLAUDE_GLOBAL_DIR"
 
-if [ -f "$CLAUDE_GLOBAL_DIR/CLAUDE.md" ]; then
+if [ -f "$CLAUDE_GLOBAL_DIR/CLAUDE.md" ] && [ "$UPDATE" = false ]; then
   echo "[skip] ~/.claude/CLAUDE.md 이미 존재합니다. 덮어쓰지 않습니다."
 else
   cp "$SCRIPT_DIR/global/claude/CLAUDE.md" "$CLAUDE_GLOBAL_DIR/CLAUDE.md"
   echo "[done] ~/.claude/CLAUDE.md 설치 완료"
 fi
 
-if [ -f "$CLAUDE_GLOBAL_DIR/settings.json" ]; then
+if [ -f "$CLAUDE_GLOBAL_DIR/settings.json" ] && [ "$UPDATE" = false ]; then
   echo "[skip] ~/.claude/settings.json 이미 존재합니다. 덮어쓰지 않습니다."
   echo "       수동으로 병합하세요: $SCRIPT_DIR/global/claude/settings.json"
 else
   cp "$SCRIPT_DIR/global/claude/settings.json" "$CLAUDE_GLOBAL_DIR/settings.json"
   echo "[done] ~/.claude/settings.json 설치 완료"
+fi
+
+# 1.5 Shared Skills 설치 (Claude 전역)
+SHARED_SKILLS_SRC="$SCRIPT_DIR/templates/shared-skills"
+CLAUDE_SKILLS_DST="$CLAUDE_GLOBAL_DIR/skills"
+
+if [ -d "$SHARED_SKILLS_SRC" ]; then
+  echo ""
+  echo "=== Shared Skills (Claude 전역) ==="
+  mkdir -p "$CLAUDE_SKILLS_DST"
+  for skill_dir in "$SHARED_SKILLS_SRC"/*/; do
+    [ -d "$skill_dir" ] || continue
+    skill_name=$(basename "$skill_dir")
+    if [ -d "$CLAUDE_SKILLS_DST/$skill_name" ] && [ "$UPDATE" = false ]; then
+      echo "[skip] ~/.claude/skills/$skill_name/ 이미 존재합니다."
+    else
+      # Clean existing if update
+      [ "$UPDATE" = true ] && rm -rf "$CLAUDE_SKILLS_DST/$skill_name"
+      cp -r "$skill_dir" "$CLAUDE_SKILLS_DST/$skill_name"
+      echo "[done] ~/.claude/skills/$skill_name/ 설치 완료"
+    fi
+  done
 fi
 
 # 2. Gemini/Antigravity 전역 설정

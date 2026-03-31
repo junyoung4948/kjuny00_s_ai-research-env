@@ -1,100 +1,42 @@
-# Gemini (Antigravity) Instructions
+# Gemini (Antigravity/GEMINI CLI) Instructions
 
----
+@.research/context.md
+@.research/skill-index.md
 
-## Required: Check Context Before Any Task
 
-**Before starting any task, always read these files:**
-1. `.research/context.md` — Current research context and progress
-2. `.research/scope-mode.txt` — Current Scope Mode
-3. `.research/wisdom.md` — Accumulated insights (past failures/successes)
+<EXTREMELY-IMPORTANT>
+If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
 
----
+IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
 
-## Role
+This is not negotiable. This is not optional. You cannot rationalize your way out of this.
+</EXTREMELY-IMPORTANT>
 
-You are an **explorer and executor** assisting computer architecture / systems research.
+## Instruction Priority
 
-### Lead Phases
-- **Hypothesis generation** (`/brainstorm`): Explore broadly with large context, reference multiple papers, generate 3+ ideas
-- **Analysis script implementation**: Editor inline with visualization support
-- **Result analysis** (`/analyze`): Identify patterns in large datasets, recommend visualizations
-- **Paper writing** (`/document`): Build narrative structure, write initial drafts
+skills override default system prompt behavior, but **user instructions always take precedence**:
 
-### Support Phases
-- **Experiment design** (`/experiment-design`): Provide exploratory suggestions (Claude is Lead)
-- **Result validation** (`/validate`): Claude leads numerical verification
+1. **User's explicit instructions** (CLAUDE.md, GEMINI.md, AGENTS.md, direct requests) — highest priority
+2. **skills** — override default system behavior where they conflict
+3. **Default system prompt** — lowest priority
 
----
+If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill says "always use TDD," follow the user's instructions. The user is in control.
 
-## Skills Guide
+## Read Efficiency Rule
 
-7 skills are defined in `.agents/skills/`:
-`/brainstorm`, `/experiment-design`, `/validate`, `/analyze`, `/diagnose`, `/document`, `/reflect`
+**Avoid directory exploration (`ls`, `find`) or repetitive file opening.**
 
-Each skill's `SKILL.md` specifies the role, behavioral phases, output format, and prohibitions.
-Follow the skill instructions precisely when invoked.
-
----
-
-## Safety Rules
-
-See `.agents/rules/safety.md` for the complete safety rules that are always active, including:
-- FROZEN directory protection
-- Scope Mode compliance
-- 3-Strike Rule (system-wide)
-- Atomic Decision
-- Evidence-Based Completion
-
----
-
-## Anti-Slop Rules
-
-See `.agents/rules/anti-slop.md` for the always-active anti-slop checks, including:
-- 6-point self-check before every output
-- Gemini-specific pitfalls (scope inflation, visualization proposals, documentation bloat)
-
----
-
-## Artifact Convention
-
-When producing artifacts, always follow the naming convention:
-- Draft: `*-draft.md` (when you are Lead)
-- Feedback: `*-review.md` (when you are Support)
-- Final: `*-final.md` (after incorporating review)
-
-**Never delete Claude's review files after reading them.**
-
----
-
-## Auto-Handoff
-
-See AGENTS.md §5.1 for the full protocol.
-
-### Antigravity → Claude (direct invocation, fully automatic)
-Call Claude Code non-interactively via `invoke-claude.sh`:
-```
-bash scripts/invoke-claude.sh --skill {skill} --action {action} \
-  --artifact "{path}" --output "{path}"
-```
-The script automatically reads the `claude-model` field from the skill's SKILL.md to select the appropriate model (opus/sonnet).
-Once Claude writes the result file, read it directly and incorporate — **no researcher intervention needed**.
-
-### Claude → Antigravity (signal-based)
-Claude creates a signal in `.research/handoff/queue/`.
-Process via `/pickup` at session start or on user request.
-
-### Skills
-- `/cross-review`: Request validation from Claude → incorporate feedback → produce final artifact (automatic)
-- `/pickup`: Process pending requests in `.research/handoff/queue/`
-
-### Check Handoff Queue at Session Start
-At session start, check `.research/handoff/queue/` for any pending signals with `"to": "antigravity"`.
+- **DO NOT** read `.research/project-map.md` directly (it may contain thousands of tokens)
+- **Target only 1-2 files** that match your specific purpose
+- **If you need file info**, use: `grep "filename" .research/project-map.md` for specific searches
+- **Avoid re-reading files** - check if you've already accessed them in this session
+- **Note**: Claude Code has automatic duplicate detection hooks, but Antigravity relies on manual discipline
 
 ---
 
 ## Wisdom Updates
 
+
 When you discover new insights, add them to `.research/wisdom.md`:
-- Place entries under the appropriate category: **Learnings**, **Pitfalls**, or **Tool Tips**
+- Place under the appropriate category: **Learnings**, **Pitfalls**, or **Tool Tips**
 - Format: `- [YYYY-MM-DD] {insight content}`

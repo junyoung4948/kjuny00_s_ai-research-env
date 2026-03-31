@@ -75,6 +75,36 @@ assert_allow \
   "Allow: empty command field" \
   "{\"tool_input\":{}}"
 
+# Test 5: Block git push --force
+assert_ask \
+  "Ask: git push --force (destructive)" \
+  "{\"tool_input\":{\"command\":\"git push --force origin main\"}}"
+
+# Test 6: Allow rm -rf .venv (safe exception)
+assert_allow \
+  "Allow: rm -rf .venv (safe exception)" \
+  "{\"tool_input\":{\"command\":\"rm -rf .venv\"}}"
+
+# Test 7: Block git checkout . (discards uncommitted changes)
+assert_ask \
+  "Ask: git checkout . (discards uncommitted changes)" \
+  "{\"tool_input\":{\"command\":\"git checkout .\"}}"
+
+# Test 8: Block git restore . (discards uncommitted changes)
+assert_ask \
+  "Ask: git restore . (discards uncommitted changes)" \
+  "{\"tool_input\":{\"command\":\"git restore .\"}}"
+
+# Test 9: Block docker system prune
+assert_ask \
+  "Ask: docker system prune (container cleanup)" \
+  "{\"tool_input\":{\"command\":\"docker system prune -a\"}}"
+
+# Test 10: Allow safe ls command
+assert_allow \
+  "Allow: ls (safe read-only command)" \
+  "{\"tool_input\":{\"command\":\"ls -la\"}}"
+
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1

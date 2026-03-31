@@ -6,12 +6,11 @@ set -euo pipefail
 
 INPUT=$(cat)
 
-# Extract command from tool_input — Python primary (handles escaped quotes correctly)
-COMMAND=$(printf '%s' "$INPUT" | python3 -c 'import sys,json; print(json.loads(sys.stdin.read()).get("tool_input",{}).get("command",""))' 2>/dev/null || true)
+# Extract command from tool_input — grep primary (fast), python3 fallback (handles escaped quotes)
+COMMAND=$(printf '%s' "$INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:[[:space:]]*"//;s/"$//' || true)
 
-# grep fallback (for environments without Python)
 if [ -z "$COMMAND" ]; then
-  COMMAND=$(printf '%s' "$INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:[[:space:]]*"//;s/"$//' || true)
+  COMMAND=$(printf '%s' "$INPUT" | python3 -c 'import sys,json; print(json.loads(sys.stdin.read()).get("tool_input",{}).get("command",""))' 2>/dev/null || true)
 fi
 
 # No command found — allow
@@ -29,6 +28,8 @@ SAFE_PATTERNS=(
   "rm -rf dist"
   "rm -rf build"
   "rm -rf .mypy_cache"
+  "rm -rf .venv"
+  "rm -rf .tox"
 )
 
 for SAFE in "${SAFE_PATTERNS[@]}"; do
@@ -66,6 +67,16 @@ fi
 
 if [[ "$COMMAND" == *"git clean -f"* ]]; then
   printf '{"permissionDecision":"ask","message":"[careful] Destructive: git clean -f removes untracked files permanently."}\n'
+  exit 0
+fi
+
+if [[ "$COMMAND" == *"git checkout ."* ]] || [[ "$COMMAND" == *"git restore ."* ]]; then
+  printf '{"permissionDecision":"ask","message":"[careful] Destructive: discards all uncommitted changes in working directory."}\n'
+  exit 0
+fi
+
+if [[ "$COMMAND" == *"docker system prune"* ]] || [[ "$COMMAND" == *"docker rm -f"* ]]; then
+  printf '{"permissionDecision":"ask","message":"[careful] Destructive: Docker container/image removal."}\n'
   exit 0
 fi
 

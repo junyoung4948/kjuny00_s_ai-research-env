@@ -152,8 +152,10 @@ fi
 # Hooks: always overwrite (safety-critical infrastructure)
 cp "$TEMPLATE_DIR/.claude/hooks/check-freeze.sh"  "$PROJECT_DIR/.claude/hooks/check-freeze.sh"
 cp "$TEMPLATE_DIR/.claude/hooks/check-careful.sh" "$PROJECT_DIR/.claude/hooks/check-careful.sh"
+cp "$TEMPLATE_DIR/.claude/hooks/pre-read-guard.sh" "$PROJECT_DIR/.claude/hooks/pre-read-guard.sh"
 chmod +x "$PROJECT_DIR/.claude/hooks/check-freeze.sh"
 chmod +x "$PROJECT_DIR/.claude/hooks/check-careful.sh"
+chmod +x "$PROJECT_DIR/.claude/hooks/pre-read-guard.sh"
 echo "  [done] hooks (always updated to latest)"
 
 # [5] Claude Skills (dynamic discovery — no hardcoded list)
@@ -173,6 +175,39 @@ for skill_file in "$TEMPLATE_DIR"/.agents/skills/*/SKILL.md; do
   mkdir -p "$PROJECT_DIR/.agents/skills/$skill_name"
   copy_smart "$skill_file" "$PROJECT_DIR/.agents/skills/$skill_name/SKILL.md"
 done
+
+# [6.5] Shared Skills (양쪽 에이전트 공통)
+echo "[6.5] Shared Skills..."
+SHARED_SKILLS_SRC="$TEMPLATE_DIR/shared-skills"
+if [ -d "$SHARED_SKILLS_SRC" ]; then
+  for skill_dir in "$SHARED_SKILLS_SRC"/*/; do
+    [ -d "$skill_dir" ] || continue
+    skill_name="$(basename "$skill_dir")"
+    
+    # Claude side
+    dst_claude="$PROJECT_DIR/.claude/skills/$skill_name"
+    if [ "$UPDATE_MODE" = true ] || [ ! -d "$dst_claude" ]; then
+      mkdir -p "$dst_claude"
+      cp -r "$skill_dir"* "$dst_claude/" 2>/dev/null
+      echo "  [done] $skill_name (Claude)"
+      [ "$UPDATE_MODE" = true ] && [ -d "$dst_claude" ] && COUNT_UPD=$((COUNT_UPD + 1)) || COUNT_NEW=$((COUNT_NEW + 1))
+    else
+      echo "  [skip] .claude/skills/$skill_name — already exists"
+      COUNT_SKIP=$((COUNT_SKIP + 1))
+    fi
+
+    # Antigravity side
+    dst_ag="$PROJECT_DIR/.agents/skills/$skill_name"
+    if [ "$UPDATE_MODE" = true ] || [ ! -d "$dst_ag" ]; then
+      mkdir -p "$dst_ag"
+      cp -r "$skill_dir"* "$dst_ag/" 2>/dev/null
+      echo "  [done] $skill_name (Antigravity)"
+      # (Counting once per skill per agent might bloat counters, but it's consistent)
+    else
+      echo "  [skip] .agents/skills/$skill_name — already exists"
+    fi
+  done
+fi
 
 # [7] .agents/ rules + workflows (dynamic discovery)
 echo "[7] .agents/ rules + workflows..."
@@ -218,6 +253,19 @@ copy_never_overwrite "$TEMPLATE_DIR/.research/decisions.md"       "$PROJECT_DIR/
 copy_never_overwrite "$TEMPLATE_DIR/.research/scope-mode.txt"     "$PROJECT_DIR/.research/scope-mode.txt"
 copy_never_overwrite "$TEMPLATE_DIR/.research/pipeline-status.md" "$PROJECT_DIR/.research/pipeline-status.md"
 
+
+# [11.5] Generate project map and skill index (token efficiency)
+echo "[11.5] Generating project map and skill index..."
+if bash "$SCRIPT_DIR/scripts/generate-project-map.sh" "$PROJECT_DIR" 2>/dev/null; then
+  echo "  [done] project-map.md"
+else
+  echo "  [warn] generate-project-map.sh failed (non-fatal)"
+fi
+if bash "$SCRIPT_DIR/scripts/generate-skill-index.sh" "$PROJECT_DIR" 2>/dev/null; then
+  echo "  [done] skill-index.md"
+else
+  echo "  [warn] generate-skill-index.sh failed (non-fatal)"
+fi
 
 # [12] Dynamic Model Selection bootstrap (idempotent, runs every time)
 echo "[12] Dynamic Model Selection..."

@@ -6,12 +6,11 @@ set -euo pipefail
 
 INPUT=$(cat)
 
-# Extract file_path from tool_input — Python primary (handles escaped quotes correctly)
-FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import sys,json; print(json.loads(sys.stdin.read()).get("tool_input",{}).get("file_path",""))' 2>/dev/null || true)
+# Extract file_path from tool_input — grep primary (fast), python3 fallback (handles escaped quotes)
+FILE_PATH=$(printf '%s' "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:[[:space:]]*"//;s/"$//' || true)
 
-# grep fallback (for environments without Python)
 if [ -z "$FILE_PATH" ]; then
-  FILE_PATH=$(printf '%s' "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:[[:space:]]*"//;s/"$//' || true)
+  FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import sys,json; print(json.loads(sys.stdin.read()).get("tool_input",{}).get("file_path",""))' 2>/dev/null || true)
 fi
 
 # No file_path found — allow

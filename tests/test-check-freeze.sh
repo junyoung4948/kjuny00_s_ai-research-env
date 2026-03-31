@@ -78,6 +78,21 @@ assert_allow \
   "Allow: empty file_path" \
   "{\"tool_input\":{}}"
 
+# Test 5: Block path that equals frozen dir exactly (not just prefix)
+assert_deny \
+  "Block: file_path == profiling/results (exact match)" \
+  "{\"tool_input\":{\"file_path\":\"$PROJECT_ROOT/profiling/results\"}}"
+
+# Test 6: Allow path that starts with frozen dir name but is different directory
+assert_allow \
+  "Allow: profiling/results-backup/ (not frozen)" \
+  "{\"tool_input\":{\"file_path\":\"$PROJECT_ROOT/profiling/results-backup/file.json\"}}"
+
+# Test 7: grep-primary parsing still works for standard JSON
+assert_deny \
+  "Block: grep-parsed path in profiling/results/" \
+  "{\"tool_input\":{\"file_path\":\"$PROJECT_ROOT/profiling/results/data.csv\"}}"
+
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1
