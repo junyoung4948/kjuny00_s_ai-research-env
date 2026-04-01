@@ -36,24 +36,7 @@ Claude Code와 Gemini를 하나의 연구 프로젝트에서 함께 사용하기
 
 ## 핵심 개념
 
-### 1. 단계별 Lead/Support 역할 분담
-
-각 연구 단계에서 가장 적합한 모델이 **Lead**를 맡습니다.
-
-| 연구 단계 | Lead | Support | 이유 |
-|-----------|------|---------|------|
-| 가설 수립 (`/brainstorm`) | **Gemini** | Claude | 넓은 컨텍스트로 논문 참조, 아이디어 연결 |
-| 실험 설계 (`/experiment-design`) | **Claude** | Gemini | 변수 통제, 파라미터 공간 정의에 정밀 추론 |
-| 시뮬레이션 스크립트 구현 | **Claude** | — | CLI 네이티브, 직접 실행/디버깅 |
-| 분석 스크립트 구현 | **Gemini** | — | 에디터 inline, 멀티모달 시각화 확인 |
-| 실험 실행/모니터링 | **Claude** | — | CLI 프로세스 관리, 로그 모니터링 |
-| 결과 검증 (`/validate`) | **Claude** | — | 수치 범위 검증, 일관성 체크 |
-| 결과 분석 (`/analyze`) | **Gemini** | Claude | 대량 데이터 패턴 파악, 멀티모달 |
-| 논문 작성 (`/document`) | **Gemini** | Claude | 스토리라인 구성 → 기술적 정확성 검증 분리 |
-| 실패 진단 (`/diagnose`) | **Claude** | — | 체계적 디버깅, 3-Strike Rule |
-| 회고 (`/reflect`) | **Claude** | — | Memory 시스템으로 세션 간 연속성 |
-
-### 2. Artifact 기반 비동기 통신
+### 1. Artifact 기반 비동기 통신
 
 두 모델은 API 직접 통신 없이 **파일시스템 artifact로 비동기 소통**합니다.
 
@@ -70,27 +53,7 @@ Lead 모델 → *-final.md    (최종본)
 
 ### 3. Auto-Handoff (자동 오케스트레이션)
 
-연구자 개입 없이 agent 간 review-feedback 사이클을 자동 완료하는 메커니즘입니다.
-
-**비대칭 호출 구조** (Antigravity가 bash 명령 실행 가능하다는 사실을 활용):
-
-| 방향 | 메커니즘 | 자동화 수준 |
-|------|----------|------------|
-| **Antigravity → Claude** | `scripts/invoke-claude.sh`로 `claude -p` 직접 실행 | 완전 자동 |
-| **Claude → Antigravity** | signal 파일 생성 → 연구자가 Antigravity에서 `/pickup` | 반자동 (연구자 1회) |
-
-**5-Step 자동 파이프라인** (Antigravity에서 시작 시):
-```
-Step 1: [Gemini] 웹 리서치 → source 작성
-Step 2: invoke-claude.sh → [Claude/Opus] plan 작성          ← 자동
-Step 3: [Gemini] plan 검증 + 초안 구현                       ← 자동
-Step 4: invoke-claude.sh → [Claude/Sonnet] 초안 검증         ← 자동
-Step 5: [Gemini] 결과 요약 작성                               ← 자동
-```
-
-Claude Code에서 시작 시: signal + `/pickup` 1회 → 이후 자동 완료.
-
-새 스킬 2개: `/cross-review` (교차 검증 전체 사이클), `/pickup` (대기 signal 처리).
+기존 파이프라인에 존재하던 Auto-Handoff(signal 기반 리뷰 사이클 자동화) 메커니즘은 새 파이프라인 구축을 위해 현재 제거된 상태입니다.
 
 ### 4. Hard Gate (Skills)
 
@@ -190,28 +153,16 @@ your-research-project/
 │   ├── settings.json      ← hooks, permissions
 │   ├── hooks/
 │   │   ├── check-freeze.sh   ← FROZEN 디렉토리 보호
-│   │   └── check-careful.sh  ← 위험 명령 감지
-│   └── skills/
-│       ├── brainstorm/SKILL.md
-│       ├── experiment-design/SKILL.md
-│       ├── validate/SKILL.md
-│       ├── analyze/SKILL.md
-│       ├── diagnose/SKILL.md
-│       ├── document/SKILL.md
-│       ├── reflect/SKILL.md
-│       ├── cross-review/SKILL.md  ← 교차 검증 전체 사이클
-│       └── pickup/SKILL.md        ← 대기 signal 처리
+│   │   ├── check-careful.sh  ← 위험 명령 감지
+│   │   └── pre-read-guard.sh ← 중복 파일 읽기 감지 및 경고
+│   └── skills/            ← (새로운 파이프라인에 맞춰 추가될 예정)
 ├── .agents/
-│   ├── skills/                  ← 9개 스킬 (Gemini 행동 정의 — Claude 버전과 다른 내용)
-│   ├── rules/
-│   │   ├── research-roles.md            ← Antigravity 역할 규칙
-│   │   ├── anti-slop.md                 ← AI 슬롭 방지 (상시 적용)
-│   │   ├── safety.md                    ← 안전 규칙 (상시 적용)
-│   │   └── rationalization-prevention.md ← LLM 규칙 우회 방지 테이블
-│   └── workflows/research-cycle.md ← 연구 사이클 워크플로우
-├── scripts/
-│   ├── invoke-claude.sh   ← Antigravity→Claude 자동 호출
-│   └── create-handoff.sh  ← Claude→Antigravity signal 생성
+│   ├── skills/            ← (새로운 파이프라인에 맞춰 추가될 예정)
+├── scripts/               ← 토큰 최적화 및 모델 동기화 스크립트
+│   ├── generate-project-map.sh
+│   ├── generate-skill-index.sh
+│   ├── install-cron.sh
+│   └── sync-models.py
 ├── .research/
 │   ├── context.md         ← 현재 연구 맥락
 │   ├── wisdom.md          ← 누적 인사이트
@@ -221,10 +172,7 @@ your-research-project/
 │   ├── plans/             ← 가설, 실험 설계서
 │   ├── feedback/          ← 교차 리뷰, 검증 결과
 │   ├── retros/            ← 회고 기록
-│   ├── logs/              ← 실험 로그 요약
-│   └── handoff/
-│       ├── queue/         ← 대기 signal (JSON)
-│       └── done/          ← 완료 signal (아카이브)
+│   └── logs/              ← 실험 로그 요약
 ├── profiling/
 │   ├── scripts/
 │   └── results/           ← [FROZEN] 수정 금지
@@ -254,73 +202,8 @@ EXPLORATION ──→ REFINEMENT ──→ FOCUSED ──→ WRITING
 
 ### Quick Start
 
-**1. 연구 주제 설정**
-
-`.research/context.md`에 연구 주제와 현재 상황을 작성합니다.
-
-**2. 가설 수립** (Scope Mode: `EXPLORATION`)
-
-```
-# Antigravity(Gemini)에서
-/brainstorm
-
-# → .research/plans/hypothesis-{topic}-draft.md 생성
-# → 연구자가 Claude에게 review 요청
-# → Claude가 hypothesis-{topic}-review.md 작성
-# → Gemini가 반영하여 hypothesis-{topic}-final.md 생성
-```
-
-**3. 실험 설계** (Scope Mode: `REFINEMENT`)
-
-```
-# Claude Code에서
-/experiment-design
-
-# → Atomic Decision으로 파라미터를 하나씩 확인
-# → .research/plans/experiment-{name}-draft.md 생성
-```
-
-**4. 실험 실행 + 검증** (Scope Mode: `FOCUSED`)
-
-```
-# Claude Code에서 시뮬레이션 스크립트 구현 및 실행
-# 완료 후:
-/validate
-
-# → .research/feedback/validation-{name}.md 생성
-# 문제 발견 시:
-/diagnose    # 3-Strike Rule 적용
-```
-
-**5. 결과 분석**
-
-```
-# Antigravity(Gemini)에서
-/analyze
-
-# → .research/feedback/analysis-{name}-draft.md 생성
-# → Claude가 수치 정확성 검증 review 작성
-```
-
-**6. 논문 작성** (Scope Mode: `WRITING`)
-
-```
-# Antigravity(Gemini)에서
-/document
-
-# → docs/sections/{section}-draft.md 생성
-# → Claude가 기술적 정확성 교정 review 작성
-```
-
-**7. 회고**
-
-```
-# Claude Code에서
-/reflect
-
-# → .research/retros/{date}.md 생성
-# → wisdom.md, context.md 자동 갱신
-```
+**현재 파이프라인 및 스킬셋 재설계 중입니다.** 
+연구 사이클(`EXPLORATION`, `REFINEMENT`, `FOCUSED`, `WRITING`)에 맞춘 새로운 가이드와 전용 스킬들이 곧 안내될 예정입니다.
 
 ### Scope Mode 변경
 
@@ -335,27 +218,12 @@ WRITING        # 문서화 — 논문 작성, 새 실험 자제
 
 ---
 
-## 10개 Skills 요약
-
-| Skill | 호출 | Lead | Hard Gate (허용 도구) | 출력 |
-|-------|------|------|----------------------|------|
-| **brainstorm** | `/brainstorm` | Gemini | Read, Glob, Grep, WebSearch | `.research/plans/hypothesis-*.md` |
-| **experiment-design** | `/experiment-design` | Claude | Read, Glob, Grep, WebSearch | `.research/plans/experiment-*.md` |
-| **validate** | `/validate` | Claude | Read, Glob, Grep, Bash(읽기) | `.research/feedback/validation-*.md` |
-| **analyze** | `/analyze` | Gemini | Read, Glob, Grep, WebSearch | `.research/feedback/analysis-*.md` |
-| **diagnose** | `/diagnose` | Claude | Read, Glob, Grep, Bash, Edit | `.research/feedback/diagnosis-*.md` |
-| **document** | `/document` | Gemini→Claude | Read, Glob, Grep, Edit, Write | `docs/sections/*-draft/review/final.md` |
-| **reflect** | `/reflect` | Claude | Read, Glob, Grep, Edit, Write | `.research/retros/*.md` |
-| **sync-docs** | `/sync-docs` | Claude | Read, Glob, Grep, Edit, Write, Bash | README/GUIDE/AGENTS.md 등 갱신 |
-| cross-review | `/cross-review` | 호출자 | Read, Glob, Grep, Write, Edit, Bash | signal 또는 `*-final.md` |
-| **pickup** | `/pickup` | 호출자 | Read, Glob, Grep, Write, Edit, Bash | signal 처리 + `*-review.md` |
-
-> **`/sync-docs`는 연구 사이클 스킬이 아닌 환경 유지보수 스킬입니다.**
+> **`/sync-docs`는 환경 유지보수 스킬입니다.** (현재 `shared-skills`에 위치)
 > 스킬 추가, hook 수정, 스크립트 변경 후 실행하면 README, GUIDE.md, AGENTS.md 등의 문서를 실제 프로젝트 상태에 맞게 자동 동기화합니다.
 > 실행 시 프로젝트 유형을 자동 감지합니다:
 > - `templates/` + `init-project.sh` 존재 → **Template Mode**: README, docs/GUIDE.md, docs/REFERENCES.md 감사
 > - `.research/` + `AGENTS.md` 존재 → **Research Mode**: AGENTS.md, CLAUDE.md, GEMINI.md 감사
-> 스킬 수 변경, 파일 경로 수정 등 사실적 변경은 자동 적용하고, 소개문·아키텍처 설명 등 서술적 변경은 연구자에게 먼저 확인합니다.
+> 스킬 수 변경, 파일 경로 수정 등 사실적 변경은 자동 적용하고, 서술적 변경은 확인 후 적용합니다.
 
 ## Shared Skills (범용 생산성 스킬)
 

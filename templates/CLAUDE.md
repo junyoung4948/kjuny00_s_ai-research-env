@@ -24,7 +24,7 @@ If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill says "alw
 ## Skills Guide
 
 Available skills (invoke as slash commands):
-`/brainstorm`, `/experiment-design`, `/validate`, `/analyze`, `/diagnose`, `/document`, `/reflect`, `/sync-docs`
+(새로운 연구 파이프라인 스킬 설계 중)
 
 Each skill has a **Hard Gate** (`allowed-tools`) that physically restricts available tools.
 
@@ -43,6 +43,7 @@ Each skill has a **Hard Gate** (`allowed-tools`) that physically restricts avail
 - **Target only 1-2 files** that match your specific purpose
 - **If you need specific file info**, use: `grep "filename" .research/project-map.md`
 - **Never re-read files** already accessed in this session
+- **IF YOU SEE A `pre-read-guard.sh` WARNING**, it means you have already read this file. Stop and use your existing context.
 
 ---
 
