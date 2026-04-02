@@ -1,1 +1,17 @@
 EXPLORATION
+
+---
+# Scope Mode Rules (Self-Documenting)
+
+AI agents MUST read this file at session start to understand current constraints.
+
+## Current Mode: EXPLORATION
+
+| Mode | Meaning | Allowed Actions | Must Avoid |
+|---|---|---|---|
+| **EXPLORATION** | Searching for direction | Free idea exploration, literature survey, hypothesis brainstorming | Code writing, parameter decisions, experiment execution |
+| **REFINEMENT** | Specifying details | Experiment design, variable definition, analytical modeling | Proposing new directions, changing research questions |
+| **FOCUSED** | Concentrated execution | Code implementation, experiment execution, debugging | Direction changes, new ideas, hypothesis pivots |
+| **WRITING** | Documentation phase | Paper writing, visualization, plot generation | Running new experiments, large code changes |
+
+**ENFORCEMENT**: If an action is in "Must Avoid" for current mode, STOP and ask researcher to change mode first.

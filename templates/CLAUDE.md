@@ -1,7 +1,7 @@
 # Claude Code Instructions
 
 @.research/context.md
-@.research/skill-index.md
+@AGENTS.md
 
 <EXTREMELY-IMPORTANT>
 If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.

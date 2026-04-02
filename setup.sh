@@ -57,17 +57,57 @@ if [ -d "$SHARED_SKILLS_SRC" ]; then
   done
 fi
 
-# 2. Gemini/Antigravity 전역 설정
-# Antigravity는 ~/.gemini/ 또는 프로젝트별 설정을 사용합니다.
-# 전역 GEMINI.md와 AGENTS.md는 참조용으로 안내만 합니다.
-echo ""
-echo "[info] Gemini 전역 설정 파일:"
-echo "       - $SCRIPT_DIR/global/gemini/GEMINI.md"
-echo "       - $SCRIPT_DIR/global/gemini/AGENTS.md"
-echo "       Antigravity의 전역 설정 경로에 수동으로 복사하세요."
+# 1.6 Shared Skills 설치 (Antigravity 전역)
+AGENTS_SKILLS_DST="$HOME/.gemini/antigravity/skills"
+if [ -d "$SHARED_SKILLS_SRC" ]; then
+  echo ""
+  echo "=== Shared Skills (Antigravity 전역) ==="
+  mkdir -p "$AGENTS_SKILLS_DST"
+  for skill_dir in "$SHARED_SKILLS_SRC"/*/; do
+    [ -d "$skill_dir" ] || continue
+    skill_name=$(basename "$skill_dir")
+    if [ -d "$AGENTS_SKILLS_DST/$skill_name" ] && [ "$UPDATE" = false ]; then
+      echo "[skip] ~/.gemini/antigravity/skills/$skill_name/ 이미 존재합니다."
+    else
+      # Clean existing if update
+      [ "$UPDATE" = true ] && rm -rf "$AGENTS_SKILLS_DST/$skill_name"
+      cp -r "$skill_dir" "$AGENTS_SKILLS_DST/$skill_name"
+      echo "[done] ~/.gemini/antigravity/skills/$skill_name/ 설치 완료"
+    fi
+  done
+fi
 
-echo ""
-echo "=== 설치 완료 ==="
+# 1.7 Shared Skills 설치 (GEMINI_CLI 전역)
+AGENTS_SKILLS_DST="$HOME/.agents/skills"
+if [ -d "$SHARED_SKILLS_SRC" ]; then
+  echo ""
+  echo "=== Shared Skills (GEMINI_CLI 전역) ==="
+  mkdir -p "$AGENTS_SKILLS_DST"
+  for skill_dir in "$SHARED_SKILLS_SRC"/*/; do
+    [ -d "$skill_dir" ] || continue
+    skill_name=$(basename "$skill_dir")
+    if [ -d "$AGENTS_SKILLS_DST/$skill_name" ] && [ "$UPDATE" = false ]; then
+      echo "[skip] ~/.agents/skills/$skill_name/ 이미 존재합니다."
+    else
+      # Clean existing if update
+      [ "$UPDATE" = true ] && rm -rf "$AGENTS_SKILLS_DST/$skill_name"
+      cp -r "$skill_dir" "$AGENTS_SKILLS_DST/$skill_name"
+      echo "[done] ~/.agents/skills/$skill_name/ 설치 완료"
+    fi
+  done
+fi
+
+
+# 1. Antigravity 전역 설정
+GEMINI_GLOBAL_DIR="$HOME/.gemini"
+mkdir -p "$GEMINI_GLOBAL_DIR"
+
+if [ -f "$GEMINI_GLOBAL_DIR/GEMINI.md" ] && [ "$UPDATE" = false ]; then
+  echo "[skip] ~/.gemini/GEMINI.md 이미 존재합니다. 덮어쓰지 않습니다."
+else
+  cp "$SCRIPT_DIR/global/gemini/GEMINI.md" "$GEMINI_GLOBAL_DIR/GEMINI.md"
+  echo "[done] ~/.gemini/GEMINI.md 설치 완료"
+fi
 
 # 3. Dynamic Model Selection 설정
 echo ""

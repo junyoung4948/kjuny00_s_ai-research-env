@@ -61,7 +61,7 @@
 
 | 계층 | 파일 | 읽는 모델 | 역할 |
 |------|------|-----------|------|
-| **공유** | `AGENTS.md` | 양쪽 (지시어 방식) | 범용 규칙 13개 섹션 (역할, 안전, Anti-Slop, Anti-Sycophancy 등) |
+| **공유** | `AGENTS.md` | 양쪽 (지시어 방식) | 범용 규칙 12개 섹션 (역할, 안전, Anti-Slop, Anti-Sycophancy 등) |
 | **공유** | `.research/*` | 양쪽 | 연구 상태 파일 (context, wisdom, decisions, scope-mode 등) |
 | **Claude 전용** | `.claude/skills/*/SKILL.md` | Claude만 | (새로운 파이프라인에 맞춰 추가될 예정) |
 | **Gemini 전용** | `.agents/skills/*/SKILL.md` | Gemini만 | (새로운 파이프라인에 맞춰 추가될 예정) |
@@ -118,14 +118,15 @@
 
 ### 5. 토큰 최적화 시스템
 
-**~13,500+ 토큰/세션 절감**을 위한 사전 인덱싱 및 중복 방지 시스템입니다. [OpenWolf](https://github.com/nikhilweee/OpenWolf)와 [Aspens](https://github.com/acenolaza/aspens) 오픈소스 프로젝트의 패턴을 참고하여 구현되었습니다.
+**대폭 토큰 절감**을 위한 사전 인덱싱 및 중복 방지 시스템입니다. [OpenWolf](https://github.com/nikhilweee/OpenWolf)와 [Aspens](https://github.com/acenolaza/aspens) 오픈소스 프로젝트의 패턴을 참고하여 구현되었습니다.
+
+> **스킬 트리거**: Claude Code와 Antigravity는 이미 각 SKILL.md의 YAML frontmatter를 자동으로 읽어 트리거 여부를 판단합니다. 별도의 스킬 인덱스 없이도 에이전트 시스템이 효율적으로 작동합니다.
 
 #### 5.1 핵심 컴포넌트
 
 | 컴포넌트 | 파일 위치 | 기능 | 절감 효과 |
 |----------|-----------|------|----------|
 | **Project Map 생성기** | `scripts/generate-project-map.sh` | 파일 구조 + 토큰 추정 인덱싱 | 디렉토리 탐색 반복 제거 |
-| **Skill Index 생성기** | `scripts/generate-skill-index.sh` | 14개 SKILL.md → 단일 테이블 | ~13,000 tok → ~500 tok |
 | **Pre-Read Guard Hook** | `.claude/hooks/pre-read-guard.sh` | 중복 읽기 감지 + 경고 | 세션 내 재독 방지 |
 
 #### 5.2 자동 생성 파일
@@ -143,27 +144,15 @@
 - `SKILL.md` — Result analysis — identify patterns and trends (~1200 tok)
 ```
 
-**`.research/skill-index.md`** — 모든 스킬을 에이전트별로 분류한 통합 테이블:
-```markdown
-# Skill Index
-> Generated: 2026-03-31T21:00:00+09:00 | Skills: 23
-
-| Skill | Agent | Description |
-|-------|-------|-------------|
-| analyze | both | Result analysis — identify patterns and trends |
-| brainstorm | both | Generate research hypotheses |
-| diagnose | claude | Failure diagnosis with 3-Strike Rule |
-```
-
 #### 5.3 동작 원리
 
 **1단계: 사전 인덱싱** (`init-project.sh` 11.5단계에서 자동 실행)
 - `generate-project-map.sh`: 모든 파일의 설명 추출 + 토큰 추정
-- `generate-skill-index.sh`: SKILL.md frontmatter 파싱 + 통합 테이블 생성
 
-**2단계: 효율적 참조** (에이전트가 자동 활용)
-- `CLAUDE.md`에서 `@.research/project-map.md`, `@.research/skill-index.md` 자동 로딩
-- 에이전트들이 개별 파일 탐색 대신 인덱스 참조
+**2단계: 효율적 참조** (에이전트가 필요 시 활용)
+- Project map을 통해 파일 정보 빠르게 조회 가능 (grep 활용)
+- 에이전트들이 반복적인 디렉토리 탐색 대신 인덱스 참조
+- **주의**: project-map.md 자체가 큰 경우 직접 읽기보다는 grep으로 필요한 부분만 조회
 
 **3단계: 중복 방지** (Pre-Read Guard Hook 활성화)
 - 첫 읽기: `📋 project-map: filename — description (~tokens tok)`
@@ -207,18 +196,26 @@ bash /path/to/ai-research-env/init-project.sh .
 
 | 단계 | 작업 | 동작 방식 |
 |------|------|-----------|
-| 1 | 디렉토리 생성 | `.research/`, `.claude/`, `.agents/`, `profiling/`, `simulation/`, `docs/`, `scripts/`, `.research/handoff/queue/`, `done/` 등 31개 디렉토리 |
-| 2 | 코어 파일 복사 | `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` → **이미 존재하면 건너뜀** (`copy_if_not_exists`) |
+| 1 | 디렉토리 생성 | `.research/`, `.claude/`, `.agents/`, `profiling/`, `simulation/`, `docs/`, `scripts/` 등 |
+| 2 | 코어 파일 복사 | `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` → **이미 존재하면 건너뜀** |
 | 3 | `.gitignore`, `.aiexclude` | `.aiexclude`는 `.claude/`를 Gemini에게 숨김 |
-| 4 | Claude 설정 + hooks | `settings.json`, `check-freeze.sh`, `check-careful.sh` → **항상 최신 버전으로 덮어씀** |
-| 5 | Claude 스킬 | `.claude/skills/*/SKILL.md` (파이프라인 설계에 따라 변동) |
-| 6 | Antigravity 스킬 | `.agents/skills/`에서 복사 (파이프라인 설계에 따라 변동) |
-| 7 | Integration tests | `tests/test-check-freeze.sh`, `tests/test-check-careful.sh` → hook 단위 테스트 |
-| 9 | `.research/` 초기 파일 | `context.md`, `wisdom.md`, `decisions.md`, `scope-mode.txt`, `pipeline-status.md` |
-| 10 | 필수 스크립트 복사 | `scripts/` 디렉토리의 환경 동기화 스크립트 등 |
-| 11 | Handoff README (선택 사항) | 향후 파이프라인 확장을 위해 보존 |
+| 4 | Claude 설정 + hooks | `settings.json` (**jq로 hooks만 병합**), hooks는 **항상 최신 버전** |
+| 5 | Claude 스킬 | `.claude/skills/*/SKILL.md` 복사 (프로젝트별) |
+| 6 | Antigravity 스킬 | `.agents/skills/*/SKILL.md` 복사 (프로젝트별) |
+| 6.5 | Shared Skills | **Global 설치 권장** — `setup.sh` 실행 시 `~/.claude/skills/`, `~/.agents/skills/`에 설치 |
+| 7 | `.agents/` rules + workflows | Antigravity 전용 규칙 및 워크플로우 파일 |
+| 8 | Integration tests | `tests/test-check-freeze.sh`, `tests/test-check-careful.sh` |
+| 9 | Scripts | `generate-project-map.sh`, `sync-models.py` 등 |
+| 10 | Handoff protocol | `.research/handoff/README.md` |
+| 11 | `.research/` 초기 파일 | `context.md`, `wisdom.md`, `decisions.md`, `scope-mode.txt`, `pipeline-status.md` — **절대 덮어쓰지 않음** |
+| 11.5 | Project map 생성 | `generate-project-map.sh` 자동 실행 → `.research/project-map.md` |
+| 12 | Dynamic Model Selection | 초기 sync + cron 등록 + 셸 프로파일 설정 |
 
-**설계 의도**: hooks(4단계)는 항상 최신화하고, 연구 콘텐츠(2, 5, 8단계)는 기존 파일을 보존하여 연구자의 수정 사항이 날아가지 않도록 함.
+**설계 의도**: 
+- hooks/scripts(4, 8, 9단계)는 항상 최신화
+- 연구 콘텐츠(2, 11단계)는 기존 파일 보존
+- **settings.json**: jq로 hooks만 템플릿에서 병합, MCP/permissions는 유지
+- **Shared Skills**: global 설치 권장 (프로젝트별 복사 제거)
 
 ### 7. 연구 사이클 스킬 사용법 (현재 재설계 중)
 
@@ -288,6 +285,25 @@ Documentation sync health:
 ```
 
 **Hard Gate**: `Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion` 허용. Bash는 디렉토리/git 조회 용도로만 사용 (실험 실행 금지).
+
+#### Shared Skills (범용 생산성 스킬)
+
+연구 전용 스킬 외에도, 모든 프로젝트와 일상 업무에서 유용한 **범용 생산성 스킬 12개**가 포함되어 있습니다. 이 스킬들은 [anthropic/skills](https://github.com/anthropics/anthropic-quickstarts/tree/main/computer-use-demo/skills)와 [antigravity-awesome-skills](https://github.com/antigravity-ai/awesome-skills)에서 엄선하여 통합되었습니다.
+
+| 소스 | 스킬 | 용도 |
+|------|------|------|
+| **Official (Anthropic)** | `pdf` | 논문 및 PDF 문서 읽기, 데이터 추출 |
+| | `skill-creator` | 새 스킬 생성, 테스트, 평가 도구 |
+| | `xlsx` | 실험 결과 데이터(Excel) 분석 및 처리 |
+| | `pptx` | 연구 발표 자료(PowerPoint) 생성 및 편집 |
+| | `doc-coauthoring` | 기술 문서, 제안서 공동 작성 구조화 |
+| | `sync-docs` | **핵심**: 프로젝트 문서(README, GUIDE 등) 자동 동기화 |
+| **Community (Antigravity)** | `matplotlib` | 논문용 고품질 그래프 및 시각화 생성 |
+| | `seaborn` | 통계 데이터 시각화 (matplotlib 보완) |
+| | `bash-pro` | 방어적 Bash 스크립팅 및 자동화 전문가 |
+| | `python-pro` | Python 3.12+ 최신 패턴 및 성능 최적화 |
+| | `gdb-cli` | C/C++ 시뮬레이터 디버깅 (GDB 연동) |
+| | `git-advanced-workflows` | 복잡한 Git 히스토리 관리 및 복구 |
 
 ### 8. 연구 워크플로우
 
@@ -545,8 +561,7 @@ Red Flags (스킬 건너뛰기 합리화):
 | 경로 | 설명 |
 |------|------|
 | `init-project.sh` | 11단계 프로젝트 초기화 스크립트 |
-| `templates/scripts/generate-project-map.sh` | 프로젝트 디렉토리 맵 파싱 스크립트 |
-| `templates/scripts/generate-skill-index.sh` | 스킬 인덱스 생성 스크립트 |
+| `scripts/generate-project-map.sh` | 프로젝트 디렉토리 맵 파싱 스크립트 |
 | `tests/test-check-freeze.sh` | check-freeze.sh hook 단위 테스트 (7 test cases) |
 | `tests/test-check-careful.sh` | check-careful.sh hook 단위 테스트 (10 test cases) |
 | `setup.sh` | 글로벌 설정 설치 (선택사항) |

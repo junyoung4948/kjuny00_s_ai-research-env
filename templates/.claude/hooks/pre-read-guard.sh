@@ -7,8 +7,9 @@ set -uo pipefail
 
 # Constants
 readonly SCRIPT_NAME="${0##*/}"
-readonly SESSION_LOG=".research/.session-reads.log"
+readonly SESSION_LOG=".research/.session-reads-${PPID}.log"
 readonly PROJECT_MAP=".research/project-map.md"
+readonly LOG_MAX_AGE_DAYS=10
 
 # Logging functions
 log_info() {
@@ -60,6 +61,12 @@ get_file_info_from_map() {
     else
         echo ""
     fi
+}
+
+# Clean up session log files older than LOG_MAX_AGE_DAYS
+cleanup_old_logs() {
+    find ".research" -maxdepth 1 -name ".session-reads-*.log" \
+        -mtime "+${LOG_MAX_AGE_DAYS}" -delete 2>/dev/null || true
 }
 
 # Record file read
@@ -129,6 +136,9 @@ process_read_request() {
 
 # Main function
 main() {
+    # Clean up logs older than LOG_MAX_AGE_DAYS (non-blocking)
+    cleanup_old_logs
+
     # Read JSON input from stdin
     local json_input
     json_input=$(cat)

@@ -133,11 +133,32 @@ copy_smart "$TEMPLATE_DIR/.aiexclude" "$PROJECT_DIR/.aiexclude"
 # [4] Claude config + hooks
 echo "[4] Claude config + hooks..."
 
-# settings.json: always skip-if-exists (may contain user MCP servers, custom permissions)
+# settings.json: smart merge (hooks from template, preserve MCP/permissions)
 if [ "$UPDATE_MODE" = true ] && [ -f "$PROJECT_DIR/.claude/settings.json" ]; then
-  echo "  [skip] .claude/settings.json — preserved (check template for new hooks)"
-  echo "         Template: $TEMPLATE_DIR/.claude/settings.json"
-  COUNT_SKIP=$((COUNT_SKIP + 1))
+  # Try smart merge with jq (hooks only)
+  if command -v jq &>/dev/null; then
+    TEMP_SETTINGS=$(mktemp)
+    if jq -s '.[0] * {hooks: .[1].hooks}' \
+       "$PROJECT_DIR/.claude/settings.json" \
+       "$TEMPLATE_DIR/.claude/settings.json" > "$TEMP_SETTINGS" 2>/dev/null; then
+      if cmp -s "$TEMP_SETTINGS" "$PROJECT_DIR/.claude/settings.json"; then
+        echo "  [ok]   .claude/settings.json (hooks up-to-date)"
+        COUNT_OK=$((COUNT_OK + 1))
+      else
+        mv "$TEMP_SETTINGS" "$PROJECT_DIR/.claude/settings.json"
+        echo "  [upd]  .claude/settings.json — hooks merged from template"
+        COUNT_UPD=$((COUNT_UPD + 1))
+      fi
+    else
+      echo "  [skip] .claude/settings.json — jq merge failed (check manually)"
+      COUNT_SKIP=$((COUNT_SKIP + 1))
+    fi
+    rm -f "$TEMP_SETTINGS"
+  else
+    echo "  [skip] .claude/settings.json — jq not found (install jq for auto-merge)"
+    echo "         Template: $TEMPLATE_DIR/.claude/settings.json"
+    COUNT_SKIP=$((COUNT_SKIP + 1))
+  fi
 else
   if [ ! -f "$PROJECT_DIR/.claude/settings.json" ]; then
     cp "$TEMPLATE_DIR/.claude/settings.json" "$PROJECT_DIR/.claude/settings.json"
@@ -176,37 +197,15 @@ for skill_file in "$TEMPLATE_DIR"/.agents/skills/*/SKILL.md; do
   copy_smart "$skill_file" "$PROJECT_DIR/.agents/skills/$skill_name/SKILL.md"
 done
 
-# [6.5] Shared Skills (양쪽 에이전트 공통)
+# [6.5] Shared Skills (global 설치 권장)
 echo "[6.5] Shared Skills..."
-SHARED_SKILLS_SRC="$TEMPLATE_DIR/shared-skills"
-if [ -d "$SHARED_SKILLS_SRC" ]; then
-  for skill_dir in "$SHARED_SKILLS_SRC"/*/; do
-    [ -d "$skill_dir" ] || continue
-    skill_name="$(basename "$skill_dir")"
-    
-    # Claude side
-    dst_claude="$PROJECT_DIR/.claude/skills/$skill_name"
-    if [ "$UPDATE_MODE" = true ] || [ ! -d "$dst_claude" ]; then
-      mkdir -p "$dst_claude"
-      cp -r "$skill_dir"* "$dst_claude/" 2>/dev/null
-      echo "  [done] $skill_name (Claude)"
-      [ "$UPDATE_MODE" = true ] && [ -d "$dst_claude" ] && COUNT_UPD=$((COUNT_UPD + 1)) || COUNT_NEW=$((COUNT_NEW + 1))
-    else
-      echo "  [skip] .claude/skills/$skill_name — already exists"
-      COUNT_SKIP=$((COUNT_SKIP + 1))
-    fi
-
-    # Antigravity side
-    dst_ag="$PROJECT_DIR/.agents/skills/$skill_name"
-    if [ "$UPDATE_MODE" = true ] || [ ! -d "$dst_ag" ]; then
-      mkdir -p "$dst_ag"
-      cp -r "$skill_dir"* "$dst_ag/" 2>/dev/null
-      echo "  [done] $skill_name (Antigravity)"
-      # (Counting once per skill per agent might bloat counters, but it's consistent)
-    else
-      echo "  [skip] .agents/skills/$skill_name — already exists"
-    fi
-  done
+SHARED_COUNT=$(find "$TEMPLATE_DIR/shared-skills" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l || echo 0)
+if [ "$SHARED_COUNT" -gt 0 ]; then
+  echo "  [info] $SHARED_COUNT shared skills available"
+  echo "         Run 'bash $SCRIPT_DIR/setup.sh' to install globally"
+  echo "         (Recommended: shared skills work best as global skills)"
+else
+  echo "  [skip] No shared skills found"
 fi
 
 # [7] .agents/ rules + workflows (dynamic discovery)
@@ -254,17 +253,12 @@ copy_never_overwrite "$TEMPLATE_DIR/.research/scope-mode.txt"     "$PROJECT_DIR/
 copy_never_overwrite "$TEMPLATE_DIR/.research/pipeline-status.md" "$PROJECT_DIR/.research/pipeline-status.md"
 
 
-# [11.5] Generate project map and skill index (token efficiency)
-echo "[11.5] Generating project map and skill index..."
+# [11.5] Generate project map (token efficiency)
+echo "[11.5] Generating project map..."
 if bash "$SCRIPT_DIR/scripts/generate-project-map.sh" "$PROJECT_DIR" 2>/dev/null; then
   echo "  [done] project-map.md"
 else
   echo "  [warn] generate-project-map.sh failed (non-fatal)"
-fi
-if bash "$SCRIPT_DIR/scripts/generate-skill-index.sh" "$PROJECT_DIR" 2>/dev/null; then
-  echo "  [done] skill-index.md"
-else
-  echo "  [warn] generate-skill-index.sh failed (non-fatal)"
 fi
 
 # [12] Dynamic Model Selection bootstrap (idempotent, runs every time)
