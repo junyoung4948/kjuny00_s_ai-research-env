@@ -20,11 +20,11 @@
 │   ├── hooks/
 │   │   ├── check-freeze.sh   ← Edit/Write 시 FROZEN 디렉토리 보호
 │   │   ├── check-careful.sh  ← Bash 시 위험 명령 감지
-│   │   └── pre-read-guard.sh ← 중복 файл 읽기 방지 Hook (경고)
-│   └── skills/            ← (새로운 파이프라인에 맞춰 추가될 예정)
+│   │   └── pre-read-guard.sh ← 중복 파일 읽기 방지 Hook (경고)
+│   └── skills/            ← brainstorm-arch, build-motivation, peer-review
 │
 ├── .agents/               ← [Gemini 전용]
-│   ├── skills/            ← (새로운 파이프라인에 맞춰 추가될 예정)
+│   ├── skills/            ← brainstorm-arch, build-motivation, peer-review
 │   ├── rules/             ← 상시 자동 로딩
 │   │   ├── safety.md                    ← FROZEN, 3-Strike, Atomic Decision 등
 │   │   ├── anti-slop.md                 ← Anti-Slop + Anti-Sycophancy + Completion Status
@@ -586,5 +586,7 @@ Red Flags (스킬 건너뛰기 합리화):
 - [x] CSO Description Convention → 모든 SKILL.md description "Use when..." 형식
 - [x] Implementation Steps → `/experiment-design` SKILL.md (>1 file or >20 lines trigger)
 - [x] Integration Test Infrastructure → `tests/` 디렉토리 (8/8 pass)
+
+
 
 

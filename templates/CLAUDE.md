@@ -34,7 +34,7 @@ Each skill has a **Hard Gate** (`allowed-tools`) that physically restricts avail
 
 ## Read Efficiency Rule
 
-**Avoid directory exploration (`ls`, `find`) or repetitive file opening.**
+**Minimize directory exploration (`ls`, `find`) or repetitive file opening(`Grep`, `Glob`).**
 
 - **DO NOT** read `.research/project-map.md` directly (it may contain thousands of tokens)
 - **Instead**, rely on the Pre-Read Guard Hook that shows file info automatically:
@@ -42,6 +42,7 @@ Each skill has a **Hard Gate** (`allowed-tools`) that physically restricts avail
   - Duplicate read: `⚡ pre-read: filename already read this session (~tokens tok)`
 - **Target only 1-2 files** that match your specific purpose
 - **If you need specific file info**, use: `grep "filename" .research/project-map.md`
+- **You read too much** before read or try to read(`Grep`, `Glob`), think twice whether this read is necessary.
 - **Never re-read files** already accessed in this session
 - **IF YOU SEE A `pre-read-guard.sh` WARNING**, it means you have already read this file. Stop and use your existing context.
 

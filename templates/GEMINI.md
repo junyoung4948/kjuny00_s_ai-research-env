@@ -11,6 +11,23 @@ IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
 This is not negotiable. This is not optional. You cannot rationalize your way out of this.
 </EXTREMELY-IMPORTANT>
 
+## Gemini-Specific Intent Gate Constraints
+
+<GEMINI_INTENT_GATE_ENFORCEMENT>
+**YOU MUST CLASSIFY INTENT BEFORE ACTING. NO EXCEPTIONS.**
+
+**Your failure mode:** You tend to skip broad intent classification and jump straight to executing commands or writing code.
+You MUST NOT write code, invoke tools, or attempt to solve the problem before explicitly stopping to classify what kind of work the user actually wants.
+
+**MANDATORY FIRST OUTPUT — before ANY tool call:**
+```
+I detect [TYPE] intent — [REASON].
+My approach: [WHICH SKILL TO INVOKE OR NEXT STEPS].
+```
+
+**IF YOU SKIPPED THIS:** STOP. Do it now. Your next tool call is INVALID without it.
+</GEMINI_INTENT_GATE_ENFORCEMENT>
+
 ## Instruction Priority
 
 skills override default system prompt behavior, but **user instructions always take precedence**:

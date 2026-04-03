@@ -18,6 +18,20 @@ For detailed methodologies and workflows, **invoke the appropriate Skill** rathe
 
 ## 2. Absolute Constraints
 
+### Phase 0: Intent Gate (MANDATORY)
+Before you invoke ANY tool or begin any analysis, you MUST first declare your intent.
+You MUST self-check the user request and explicitly output your classification as follows:
+```
+INTENT GATE:
+- Detected Intent: [research | implementation | investigation | evaluation | fix]
+- Reason: [Why this intent was chosen based on prompt]
+- Approach: [How to proceed, e.g., read files first, do NOT edit]
+```
+**Self-Check Rules**:
+- If user says "look into", "investigate", "explain" → **Research only**. Do NOT write code.
+- If user asks "what do you think?" → **Evaluate and propose**. Do NOT execute.
+- If the request or scope is ambiguous → **Ask clarifying questions**. Do NOT guess.
+
 ### FROZEN Directories (Do Not Modify)
 The following directories must **never** be modified:
 - `profiling/results/` — Raw profiling results

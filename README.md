@@ -161,9 +161,9 @@ your-research-project/
 │   │   ├── check-freeze.sh   ← FROZEN 디렉토리 보호
 │   │   ├── check-careful.sh  ← 위험 명령 감지
 │   │   └── pre-read-guard.sh ← 중복 파일 읽기 감지 및 경고
-│   └── skills/            ← (새로운 파이프라인에 맞춰 추가될 예정)
+│   └── skills/            ← brainstorm-arch, build-motivation, peer-review
 ├── .agents/
-│   ├── skills/            ← (새로운 파이프라인에 맞춰 추가될 예정)
+│   ├── skills/            ← brainstorm-arch, build-motivation, peer-review
 ├── scripts/               ← 토큰 최적화 및 모델 동기화 스크립트
 │   ├── generate-project-map.sh
 │   ├── install-cron.sh
